@@ -1,0 +1,13 @@
+{
+    "type": "code",
+    "modid": "serveressentials",
+    "name": "ServerEssentials",
+    "authors": [
+        "BoboDev"
+    ],
+    "description": "Essentials commands for servers",
+    "version": "1.0.0",
+    "dependencies": {
+        "game": ""
+    }
+}
