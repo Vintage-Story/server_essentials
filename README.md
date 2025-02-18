@@ -9,6 +9,7 @@ Features:
 - tpa
 - tpaaccept
 - tpadeny
+- tpacancel
 
 ### Observations
 Configurations can be found in vintage story data folder ``ModConfig/ServerEssentials/config/base.json``

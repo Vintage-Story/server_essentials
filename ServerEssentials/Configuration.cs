@@ -100,6 +100,7 @@ public static class Configuration
     public static bool tpaCommandCanReceiveDamage = false;
     public static bool enableTpaAcceptCommand = true;
     public static bool enableTpaDenyCommand = true;
+    public static bool enableTpaCancelCommand = true;
     #endregion
     public static bool enableExtendedLogs = true;
 
@@ -229,6 +230,13 @@ public static class Configuration
                 else if (value is not bool) Debug.Log($"CONFIGURATION ERROR: enableTpaDenyCommand is not boolean is {value.GetType()}");
                 else enableTpaDenyCommand = (bool)value;
             else Debug.Log("CONFIGURATION ERROR: enableTpaDenyCommand not set");
+        }
+        { //enableTpaCancelCommand
+            if (baseConfigs.TryGetValue("enableTpaCancelCommand", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: enableTpaCancelCommand is null");
+                else if (value is not bool) Debug.Log($"CONFIGURATION ERROR: enableTpaCancelCommand is not boolean is {value.GetType()}");
+                else enableTpaCancelCommand = (bool)value;
+            else Debug.Log("CONFIGURATION ERROR: enableTpaCancelCommand not set");
         }
         { //enableExtendedLogs
             if (baseConfigs.TryGetValue("enableExtendedLogs", out object value))

@@ -17,5 +17,6 @@
     "tpaCommandCanReceiveDamage": false,
     "enableTpaAcceptCommand": true,
     "enableTpaDenyCommand": true,
+    "enableTpaCancelCommand": true,
     "enableExtendedLogs": true
 }

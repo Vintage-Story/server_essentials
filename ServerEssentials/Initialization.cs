@@ -17,6 +17,7 @@ public class Initialization : ModSystem
     private readonly Dictionary<string, int> homeCooldowns = [];
     private readonly Dictionary<string, int> tpaCooldowns = [];
     private readonly Dictionary<string, List<string>> tpaRequests = [];
+    private readonly Dictionary<string, List<string>> tpaDelays = [];
 
     public override void StartServerSide(ICoreServerAPI api)
     {
@@ -117,7 +118,7 @@ public class Initialization : ModSystem
         }
         if (Configuration.enableTpaDenyCommand)
         {
-            // Create tpaaccept command
+            // Create tpadeny command
             api.ChatCommands.Create("tpadeny")
             // Description
             .WithDescription("Deny a teleport request /tpadeny playername")
@@ -129,6 +130,21 @@ public class Initialization : ModSystem
             .WithArgs(new StringArgParser("playername", false))
             // Function Handle
             .HandleWith(TpaDenyCommand);
+        }
+        if (Configuration.enableTpaCancelCommand)
+        {
+            // Create tpacancel command
+            api.ChatCommands.Create("tpacancel")
+            // Description
+            .WithDescription("Cancel a channeling teleport request /tpacancel playername")
+            // Chat privilege
+            .RequiresPrivilege(Privilege.chat)
+            // Only if is a valid player
+            .RequiresPlayer()
+            // Need a argument called home name or not
+            .WithArgs(new StringArgParser("playername", false))
+            // Function Handle
+            .HandleWith(TpaCancelCommand);
         }
     }
 
@@ -301,7 +317,7 @@ public class Initialization : ModSystem
     {
         IServerPlayer player = args.Caller.Player as IServerPlayer;
 
-        if (homeCooldowns.TryGetValue(player.PlayerUID, out int secondsRemaing))
+        if (tpaCooldowns.TryGetValue(player.PlayerUID, out int secondsRemaing))
             return TextCommandResult.Success($"Tpa command is still on cooldown: {secondsRemaing} seconds remaining...", "7");
 
         if (!args.Parsers[0].IsMissing)
@@ -375,16 +391,57 @@ public class Initialization : ModSystem
             if (playerTeleporting is null)
                 return TextCommandResult.Success($"Request not found", "12");
 
+            if (tpaCooldowns.TryGetValue(playerTeleporting.PlayerUID, out int secondsRemaing))
+                return TextCommandResult.Success($"Tpa command is still on cooldown for {playerTeleporting.PlayerName}", "7");
+
             EntityPos playerLastPosition = playerTeleporting.Entity.Pos.Copy();
             float playerLastHealth = playerTeleporting.Entity.GetBehavior<EntityBehaviorHealth>()?.Health ?? 0;
             if (playerLastHealth <= 0 && !Configuration.tpaCommandCanReceiveDamage)
                 return TextCommandResult.Success($"Cannot teleport, {playerTeleporting.PlayerName} health is invalid", "3");
 
             long tickId = 0;
+            long tickCooldownId = 0;
+
             uint ticksPassed = 0;
 
+            void OnTpaCooldownTick(float obj)
+            {
+                if (tpaCooldowns.TryGetValue(player.PlayerUID, out _))
+                {
+                    tpaCooldowns[player.PlayerUID] -= 1;
+                    if (tpaCooldowns[player.PlayerUID] <= 0) tpaCooldowns.Remove(player.PlayerUID);
+                    serverAPI.Event.UnregisterGameTickListener(tickCooldownId);
+                }
+                else tpaCooldowns[player.PlayerUID] = Configuration.tpaCooldown;
+            }
             void OnTpaAcceptTick(float obj)
             {
+                if (tpaDelays.TryGetValue(player.PlayerUID, out List<string> requests))
+                {
+                    bool stillInDely = false;
+                    foreach (string request in requests)
+                    {
+                        if (request == playerTeleporting.PlayerUID)
+                        {
+                            stillInDely = true;
+                            break;
+                        }
+                    }
+
+                    if (!stillInDely)
+                    {
+                        (playerTeleporting as IServerPlayer).SendMessage(0, "Teleport cancelled, because the request was cancelled", EnumChatType.CommandError);
+                        serverAPI.Event.UnregisterGameTickListener(tickId);
+                        return;
+                    }
+                }
+                else
+                {
+                    (playerTeleporting as IServerPlayer).SendMessage(0, "Teleport cancelled, because the request was cancelled", EnumChatType.CommandError);
+                    serverAPI.Event.UnregisterGameTickListener(tickId);
+                    return;
+                }
+
                 EntityPos playerActualPosition = playerTeleporting.Entity.Pos.Copy();
                 float playerActualHealth = playerTeleporting.Entity.GetBehavior<EntityBehaviorHealth>()?.Health ?? 0;
 
@@ -398,6 +455,10 @@ public class Initialization : ModSystem
                 {
                     if (playerActualPosition.XYZ != playerLastPosition.XYZ)
                     {
+                        if (tpaDelays.TryGetValue(player.PlayerUID, out _))
+                            tpaDelays[player.PlayerUID].Remove(playerTeleporting.PlayerUID);
+                        if (tpaDelays[player.PlayerUID].Count == 0)
+                            tpaDelays.Remove(player.PlayerUID);
                         (playerTeleporting as IServerPlayer).SendMessage(0, "Teleport canceled, because you moved", EnumChatType.CommandError);
                         serverAPI.Event.UnregisterGameTickListener(tickId);
                         return;
@@ -408,6 +469,10 @@ public class Initialization : ModSystem
                 {
                     if (playerActualHealth < playerLastHealth)
                     {
+                        if (tpaDelays.TryGetValue(player.PlayerUID, out _))
+                            tpaDelays[player.PlayerUID].Remove(playerTeleporting.PlayerUID);
+                        if (tpaDelays[player.PlayerUID].Count == 0)
+                            tpaDelays.Remove(player.PlayerUID);
                         (playerTeleporting as IServerPlayer).SendMessage(0, "Teleport canceled, because you received damage", EnumChatType.CommandError);
                         serverAPI.Event.UnregisterGameTickListener(tickId);
                         return;
@@ -419,6 +484,10 @@ public class Initialization : ModSystem
                 ticksPassed++;
                 if (ticksPassed >= Configuration.tpaCommandDelay)
                 {
+                    if (tpaDelays.TryGetValue(player.PlayerUID, out _))
+                        tpaDelays[player.PlayerUID].Remove(playerTeleporting.PlayerUID);
+                    if (tpaDelays[player.PlayerUID].Count == 0)
+                        tpaDelays.Remove(player.PlayerUID);
                     playerTeleporting.Entity.TeleportTo(player.Entity.Pos);
                     serverAPI.Event.UnregisterGameTickListener(tickId);
                 }
@@ -428,6 +497,15 @@ public class Initialization : ModSystem
             tpaRequests[player.PlayerUID].Remove(playerTeleporting.PlayerUID);
             if (tpaRequests[player.PlayerUID].Count == 0)
                 tpaRequests.Remove(player.PlayerUID);
+
+            if (!tpaDelays.TryGetValue(player.PlayerUID, out _))
+                if (!tpaDelays[player.PlayerUID].Contains(playerTeleporting.PlayerUID))
+                    tpaDelays[player.PlayerUID].Add(playerTeleporting.PlayerUID);
+                else
+                    return TextCommandResult.Success($"The request already exists for {playerTeleporting.PlayerUID}", "14");
+
+            if (Configuration.tpaCooldown > 0)
+                tickCooldownId = serverAPI.Event.RegisterGameTickListener(OnTpaCooldownTick, 1000, 0);
 
             return TextCommandResult.Success($"Request accepted: {playerTeleporting.PlayerName}", "13");
         }
@@ -491,6 +569,42 @@ public class Initialization : ModSystem
         }
 
         return TextCommandResult.Success($"No requests", "11");
+    }
+
+    private TextCommandResult TpaCancelCommand(TextCommandCallingArgs args)
+    {
+        IServerPlayer player = args.Caller.Player as IServerPlayer;
+
+        if (tpaDelays.TryGetValue(player.PlayerUID, out List<string> playerRequests))
+        {
+            IPlayer playerTeleporting = null;
+            foreach (string playerRequestUid in playerRequests)
+            {
+                foreach (IPlayer selectedPlayer in serverAPI.World.AllOnlinePlayers)
+                {
+                    if (playerRequestUid == selectedPlayer.PlayerUID)
+                    {
+                        playerTeleporting = selectedPlayer;
+                        break;
+                    }
+                }
+                if (playerTeleporting is not null)
+                    if (!args.Parsers[0].IsMissing)
+                        if (playerTeleporting.PlayerName == args[0] as string)
+                            break;
+            }
+
+            if (playerTeleporting is null)
+                return TextCommandResult.Success($"Teleport not found", "12");
+
+            tpaDelays[player.PlayerUID].Remove(playerTeleporting.PlayerUID);
+            if (tpaDelays[player.PlayerUID].Count == 0)
+                tpaDelays.Remove(player.PlayerUID);
+
+            return TextCommandResult.Success($"{playerTeleporting.PlayerName} teleport cancelled", "16");
+        }
+        else
+            return TextCommandResult.Success($"No teleport to cancel", "17");
     }
     #endregion
 }
