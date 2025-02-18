@@ -79,14 +79,28 @@ public static class Configuration
 
 
     #region baseconfigs
+
+    #region homes
     public static bool enableSetHomeCommand = true;
     public static int maxHomes = 5;
     public static bool enableHomeCommand = true;
     public static int homeCommandDelay = 5;
+    public static int homeCooldown = 120;
     public static bool homeCommandCanMove = false;
     public static bool homeCommandCanReceiveDamage = false;
     public static bool enableDelHomeCommand = true;
     public static bool enableListHomeCommand = true;
+    #endregion
+    #region tpa
+    public static bool enableTpaCommand = true;
+    public static int tpaCommandDelay = 5;
+    public static int tpaCooldown = 120;
+    public static int tpaTimeout = 10;
+    public static bool tpaCommandCanMove = false;
+    public static bool tpaCommandCanReceiveDamage = false;
+    public static bool enableTpaAcceptCommand = true;
+    public static bool enableTpaDenyCommand = true;
+    #endregion
     public static bool enableExtendedLogs = true;
 
     public static void UpdateBaseConfigurations(ICoreAPI api)
@@ -125,6 +139,13 @@ public static class Configuration
                 else homeCommandDelay = (int)(long)value;
             else Debug.Log("CONFIGURATION ERROR: homeCommandDelay not set");
         }
+        { //homeCooldown
+            if (baseConfigs.TryGetValue("homeCooldown", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: homeCooldown is null");
+                else if (value is not long) Debug.Log($"CONFIGURATION ERROR: homeCooldown is not int is {value.GetType()}");
+                else homeCooldown = (int)(long)value;
+            else Debug.Log("CONFIGURATION ERROR: homeCooldown not set");
+        }
         { //homeCommandCanMove
             if (baseConfigs.TryGetValue("homeCommandCanMove", out object value))
                 if (value is null) Debug.Log("CONFIGURATION ERROR: homeCommandCanMove is null");
@@ -152,6 +173,62 @@ public static class Configuration
                 else if (value is not bool) Debug.Log($"CONFIGURATION ERROR: enableListHomeCommand is not boolean is {value.GetType()}");
                 else enableListHomeCommand = (bool)value;
             else Debug.Log("CONFIGURATION ERROR: enableListHomeCommand not set");
+        }
+        { //enableTpaCommand
+            if (baseConfigs.TryGetValue("enableTpaCommand", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: enableTpaCommand is null");
+                else if (value is not bool) Debug.Log($"CONFIGURATION ERROR: enableTpaCommand is not boolean is {value.GetType()}");
+                else enableTpaCommand = (bool)value;
+            else Debug.Log("CONFIGURATION ERROR: enableTpaCommand not set");
+        }
+        { //tpaCommandDelay
+            if (baseConfigs.TryGetValue("tpaCommandDelay", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: tpaCommandDelay is null");
+                else if (value is not long) Debug.Log($"CONFIGURATION ERROR: tpaCommandDelay is not int is {value.GetType()}");
+                else tpaCommandDelay = (int)(long)value;
+            else Debug.Log("CONFIGURATION ERROR: tpaCommandDelay not set");
+        }
+        { //tpaCooldown
+            if (baseConfigs.TryGetValue("tpaCooldown", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: tpaCooldown is null");
+                else if (value is not long) Debug.Log($"CONFIGURATION ERROR: tpaCooldown is not int is {value.GetType()}");
+                else tpaCooldown = (int)(long)value;
+            else Debug.Log("CONFIGURATION ERROR: tpaCooldown not set");
+        }
+        { //tpaTimeout
+            if (baseConfigs.TryGetValue("tpaTimeout", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: tpaTimeout is null");
+                else if (value is not long) Debug.Log($"CONFIGURATION ERROR: tpaTimeout is not int is {value.GetType()}");
+                else tpaTimeout = (int)(long)value;
+            else Debug.Log("CONFIGURATION ERROR: tpaTimeout not set");
+        }
+        { //tpaCommandCanMove
+            if (baseConfigs.TryGetValue("tpaCommandCanMove", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: tpaCommandCanMove is null");
+                else if (value is not bool) Debug.Log($"CONFIGURATION ERROR: tpaCommandCanMove is not boolean is {value.GetType()}");
+                else tpaCommandCanMove = (bool)value;
+            else Debug.Log("CONFIGURATION ERROR: tpaCommandCanMove not set");
+        }
+        { //tpaCommandCanReceiveDamage
+            if (baseConfigs.TryGetValue("tpaCommandCanReceiveDamage", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: tpaCommandCanReceiveDamage is null");
+                else if (value is not bool) Debug.Log($"CONFIGURATION ERROR: tpaCommandCanReceiveDamage is not boolean is {value.GetType()}");
+                else tpaCommandCanReceiveDamage = (bool)value;
+            else Debug.Log("CONFIGURATION ERROR: tpaCommandCanReceiveDamage not set");
+        }
+        { //enableTpaAcceptCommand
+            if (baseConfigs.TryGetValue("enableTpaAcceptCommand", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: enableTpaAcceptCommand is null");
+                else if (value is not bool) Debug.Log($"CONFIGURATION ERROR: enableTpaAcceptCommand is not boolean is {value.GetType()}");
+                else enableTpaAcceptCommand = (bool)value;
+            else Debug.Log("CONFIGURATION ERROR: enableTpaAcceptCommand not set");
+        }
+        { //enableTpaDenyCommand
+            if (baseConfigs.TryGetValue("enableTpaDenyCommand", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: enableTpaDenyCommand is null");
+                else if (value is not bool) Debug.Log($"CONFIGURATION ERROR: enableTpaDenyCommand is not boolean is {value.GetType()}");
+                else enableTpaDenyCommand = (bool)value;
+            else Debug.Log("CONFIGURATION ERROR: enableTpaDenyCommand not set");
         }
         { //enableExtendedLogs
             if (baseConfigs.TryGetValue("enableExtendedLogs", out object value))

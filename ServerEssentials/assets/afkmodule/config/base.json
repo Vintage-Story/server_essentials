@@ -1,0 +1,21 @@
+{
+    "enableSetHomeCommand": true,
+    "maxHomes": 5,
+    "enableHomeCommand": true,
+    "homeCommandDelay": 5,
+    "homeCooldown": 120,
+    "homeCommandCanMove": false,
+    "homeCommandCanReceiveDamage": false,
+    "enableDelHomeCommand": true,
+    "enableListHomeCommand": true,
+
+    "enableTpaCommand": true,
+    "tpaCommandDelay": 5,
+    "tpaCooldown": 120,
+    "tpaTimeout": 10,
+    "tpaCommandCanMove": false,
+    "tpaCommandCanReceiveDamage": false,
+    "enableTpaAcceptCommand": true,
+    "enableTpaDenyCommand": true,
+    "enableExtendedLogs": true
+}
