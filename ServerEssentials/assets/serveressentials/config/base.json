@@ -19,5 +19,12 @@
     "enableTpaAcceptCommand": true,
     "enableTpaDenyCommand": true,
     "enableTpaCancelCommand": true,
+
+    "enableBackCommand": true,
+    "backCooldown": 120,
+    "enableBackForHome": true,
+    "enableBackForTpa": true,
+    "enableBackForDeath": true,
+    
     "enableExtendedLogs": true
 }

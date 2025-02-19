@@ -103,6 +103,18 @@ public static class Configuration
     public static bool enableTpaDenyCommand = true;
     public static bool enableTpaCancelCommand = true;
     #endregion
+    #region back
+    public static bool enableBackCommand = true;
+    public static int backCooldown = 120;
+    public static int backCommandDelay = 5;
+    public static int backCommandDuration = 30;
+    public static bool backCommandCanMove = false;
+    public static bool backCommandCanReceiveDamage = false;
+    public static bool enableBackForHome = true;
+    public static bool enableBackForTpa = true;
+    public static bool enableBackForDeath = true;
+    public static bool enableBackResycle = false;
+    #endregion
     public static bool enableExtendedLogs = true;
 
     public static void UpdateBaseConfigurations(ICoreAPI api)
@@ -245,6 +257,76 @@ public static class Configuration
                 else if (value is not bool) Debug.Log($"CONFIGURATION ERROR: enableTpaCancelCommand is not boolean is {value.GetType()}");
                 else enableTpaCancelCommand = (bool)value;
             else Debug.Log("CONFIGURATION ERROR: enableTpaCancelCommand not set");
+        }
+        { //enableBackCommand
+            if (baseConfigs.TryGetValue("enableBackCommand", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: enableBackCommand is null");
+                else if (value is not bool) Debug.Log($"CONFIGURATION ERROR: enableBackCommand is not boolean is {value.GetType()}");
+                else enableBackCommand = (bool)value;
+            else Debug.Log("CONFIGURATION ERROR: enableBackCommand not set");
+        }
+        { //backCooldown
+            if (baseConfigs.TryGetValue("backCooldown", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: backCooldown is null");
+                else if (value is not long) Debug.Log($"CONFIGURATION ERROR: backCooldown is not int is {value.GetType()}");
+                else backCooldown = (int)(long)value;
+            else Debug.Log("CONFIGURATION ERROR: backCooldown not set");
+        }
+        { //backCommandDelay
+            if (baseConfigs.TryGetValue("backCommandDelay", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: backCommandDelay is null");
+                else if (value is not long) Debug.Log($"CONFIGURATION ERROR: backCommandDelay is not int is {value.GetType()}");
+                else backCommandDelay = (int)(long)value;
+            else Debug.Log("CONFIGURATION ERROR: backCommandDelay not set");
+        }
+        { //backCommandDuration
+            if (baseConfigs.TryGetValue("backCommandDuration", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: backCommandDuration is null");
+                else if (value is not long) Debug.Log($"CONFIGURATION ERROR: backCommandDuration is not int is {value.GetType()}");
+                else backCommandDuration = (int)(long)value;
+            else Debug.Log("CONFIGURATION ERROR: backCommandDuration not set");
+        }
+        { //backCommandCanMove
+            if (baseConfigs.TryGetValue("backCommandCanMove", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: backCommandCanMove is null");
+                else if (value is not bool) Debug.Log($"CONFIGURATION ERROR: backCommandCanMove is not boolean is {value.GetType()}");
+                else backCommandCanMove = (bool)value;
+            else Debug.Log("CONFIGURATION ERROR: backCommandCanMove not set");
+        }
+        { //backCommandCanReceiveDamage
+            if (baseConfigs.TryGetValue("backCommandCanReceiveDamage", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: backCommandCanReceiveDamage is null");
+                else if (value is not bool) Debug.Log($"CONFIGURATION ERROR: backCommandCanReceiveDamage is not boolean is {value.GetType()}");
+                else backCommandCanReceiveDamage = (bool)value;
+            else Debug.Log("CONFIGURATION ERROR: backCommandCanReceiveDamage not set");
+        }
+        { //enableBackForHome
+            if (baseConfigs.TryGetValue("enableBackForHome", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: enableBackForHome is null");
+                else if (value is not bool) Debug.Log($"CONFIGURATION ERROR: enableBackForHome is not boolean is {value.GetType()}");
+                else enableBackForHome = (bool)value;
+            else Debug.Log("CONFIGURATION ERROR: enableBackForHome not set");
+        }
+        { //enableBackForTpa
+            if (baseConfigs.TryGetValue("enableBackForTpa", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: enableBackForTpa is null");
+                else if (value is not bool) Debug.Log($"CONFIGURATION ERROR: enableBackForTpa is not boolean is {value.GetType()}");
+                else enableBackForTpa = (bool)value;
+            else Debug.Log("CONFIGURATION ERROR: enableBackForTpa not set");
+        }
+        { //enableBackForDeath
+            if (baseConfigs.TryGetValue("enableBackForDeath", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: enableBackForDeath is null");
+                else if (value is not bool) Debug.Log($"CONFIGURATION ERROR: enableBackForDeath is not boolean is {value.GetType()}");
+                else enableBackForDeath = (bool)value;
+            else Debug.Log("CONFIGURATION ERROR: enableBackForDeath not set");
+        }
+        { //enableBackResycle
+            if (baseConfigs.TryGetValue("enableBackResycle", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: enableBackResycle is null");
+                else if (value is not bool) Debug.Log($"CONFIGURATION ERROR: enableBackResycle is not boolean is {value.GetType()}");
+                else enableBackResycle = (bool)value;
+            else Debug.Log("CONFIGURATION ERROR: enableBackResycle not set");
         }
         { //enableExtendedLogs
             if (baseConfigs.TryGetValue("enableExtendedLogs", out object value))

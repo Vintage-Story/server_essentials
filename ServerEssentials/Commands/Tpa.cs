@@ -1,0 +1,439 @@
+using System;
+using System.Collections.Generic;
+using Vintagestory.API.Common;
+using Vintagestory.API.Common.Entities;
+using Vintagestory.API.Server;
+using Vintagestory.GameContent;
+
+namespace ServerEssentials.Commands;
+
+public class TPA
+{
+    private readonly ICoreServerAPI serverAPI;
+
+    /// <summary>
+    /// { PlayerUID: secondsRemaining }
+    /// </summary>
+    private readonly Dictionary<string, int> tpaCooldowns = [];
+    /// <summary>
+    /// The key is the player who received the request, and the value is the players list who sended the requests
+    /// { PlayerUID: [PlayerUID,PlayerUID,PlayerUID] }
+    /// </summary>
+    private readonly Dictionary<string, List<string>> tpaRequests = [];
+    /// <summary>
+    /// The key is the player who received the request, and the value is the players list who is channeling to teleport to the player (already accepted the request)
+    /// { PlayerUID: [PlayerUID,PlayerUID,PlayerUID] }
+    /// </summary>
+    private readonly Dictionary<string, List<string>> tpaDelays = [];
+
+    public TPA(ICoreServerAPI api)
+    {
+        serverAPI = api;
+
+        if (Configuration.enableTpaCommand)
+        {
+            // Create tpa command
+            api.ChatCommands.Create("tpa")
+            // Description
+            .WithDescription("Teleport to a player using /tpa playername")
+            // Chat privilege
+            .RequiresPrivilege(Privilege.chat)
+            // Only if is a valid player
+            .RequiresPlayer()
+            // Need a argument called home name or not
+            .WithArgs(new StringArgParser("playername", false))
+            // Function Handle
+            .HandleWith(TpaCommand);
+            Debug.Log($"Command created: /tpa");
+        }
+        if (Configuration.enableTpaAcceptCommand)
+        {
+            // Create tpaaccept command
+            api.ChatCommands.Create("tpaaccept")
+            // Description
+            .WithDescription("Teleport to a player using /tpaaccept playername")
+            // Chat privilege
+            .RequiresPrivilege(Privilege.chat)
+            // Only if is a valid player
+            .RequiresPlayer()
+            // Need a argument called home name or not
+            .WithArgs(new StringArgParser("playername", false))
+            // Function Handle
+            .HandleWith(TpaAcceptCommand);
+            Debug.Log($"Command created: /tpaaccept");
+        }
+        if (Configuration.enableTpaDenyCommand)
+        {
+            // Create tpadeny command
+            api.ChatCommands.Create("tpadeny")
+            // Description
+            .WithDescription("Deny a teleport request /tpadeny playername")
+            // Chat privilege
+            .RequiresPrivilege(Privilege.chat)
+            // Only if is a valid player
+            .RequiresPlayer()
+            // Need a argument called home name or not
+            .WithArgs(new StringArgParser("playername", false))
+            // Function Handle
+            .HandleWith(TpaDenyCommand);
+            Debug.Log($"Command created: /tpadeny");
+        }
+        if (Configuration.enableTpaCancelCommand)
+        {
+            // Create tpacancel command
+            api.ChatCommands.Create("tpacancel")
+            // Description
+            .WithDescription("Cancel a channeling teleport request /tpacancel playername")
+            // Chat privilege
+            .RequiresPrivilege(Privilege.chat)
+            // Only if is a valid player
+            .RequiresPlayer()
+            // Need a argument called home name or not
+            .WithArgs(new StringArgParser("playername", false))
+            // Function Handle
+            .HandleWith(TpaCancelCommand);
+            Debug.Log($"Command created: /tpacancel");
+        }
+    }
+
+    private TextCommandResult TpaCommand(TextCommandCallingArgs args)
+    {
+        IServerPlayer player = args.Caller.Player as IServerPlayer;
+
+        if (tpaCooldowns.TryGetValue(player.PlayerUID, out int secondsRemaing))
+            return TextCommandResult.Success($"Tpa command is still on cooldown: {secondsRemaing} seconds remaining...", "7");
+
+        if (args.Parsers[0].IsMissing)
+            return TextCommandResult.Success($"Missing player name", "8");
+
+        IPlayer playerToTeleport = null;
+        foreach (IPlayer teleportPlayer in serverAPI.World.AllOnlinePlayers)
+        {
+            if (teleportPlayer.PlayerName.ToLower() == (args[0] as string).ToLower())
+            {
+                playerToTeleport = teleportPlayer;
+                break;
+            }
+        }
+        if (playerToTeleport is null)
+            return TextCommandResult.Success($"{args[0] as string} not found", "9");
+
+        (playerToTeleport as IServerPlayer).SendMessage(0, $"{player.PlayerName} send you a tpa request, /tpaaccept or /tpadeny", EnumChatType.Notification);
+        if (tpaRequests.TryGetValue(playerToTeleport.PlayerUID, out _))
+            tpaRequests[playerToTeleport.PlayerUID].Add(player.PlayerUID);
+        else
+            tpaRequests[playerToTeleport.PlayerUID] = [player.PlayerUID];
+
+        long tickid = 0;
+        int timeout = Configuration.tpaTimeout;
+
+        void OnTpaTick(float obj)
+        {
+            timeout--;
+            if (tpaRequests.TryGetValue(playerToTeleport.PlayerUID, out _))
+            {
+                // Accepted
+                if (!tpaRequests[playerToTeleport.PlayerUID].Contains(player.PlayerUID))
+                {
+                    if (tpaRequests[playerToTeleport.PlayerUID].Count == 0)
+                        tpaRequests.Remove(playerToTeleport.PlayerUID);
+
+                    serverAPI.Event.UnregisterGameTickListener(tickid);
+                    return;
+                }
+
+                // Expired
+                if (timeout <= 0)
+                {
+                    tpaRequests[playerToTeleport.PlayerUID].Remove(player.PlayerUID);
+                    if (tpaRequests[playerToTeleport.PlayerUID].Count == 0)
+                        tpaRequests.Remove(playerToTeleport.PlayerUID);
+
+                    serverAPI.Event.UnregisterGameTickListener(tickid);
+                    player.SendMessage(0, $"{playerToTeleport.PlayerName} Tpa has expired", EnumChatType.Notification);
+                    (playerToTeleport as IServerPlayer).SendMessage(0, $"{player.PlayerName} Tpa has expired", EnumChatType.Notification);
+                }
+            }
+            // Expired
+            else
+                serverAPI.Event.UnregisterGameTickListener(tickid);
+
+        }
+
+        tickid = serverAPI.Event.RegisterGameTickListener(OnTpaTick, 1000, 1000);
+
+        return TextCommandResult.Success($"Tpa request send to {playerToTeleport.PlayerName}", "10");
+    }
+
+    private TextCommandResult TpaAcceptCommand(TextCommandCallingArgs args)
+    {
+        IServerPlayer player = args.Caller.Player as IServerPlayer;
+
+        if (tpaRequests.TryGetValue(player.PlayerUID, out List<string> playerRequests))
+        {
+            IPlayer playerTeleporting = null;
+            foreach (string playerRequestUid in playerRequests)
+            {
+                foreach (IPlayer selectedPlayer in serverAPI.World.AllOnlinePlayers)
+                {
+                    if (playerRequestUid == selectedPlayer.PlayerUID)
+                    {
+                        playerTeleporting = selectedPlayer;
+                        break;
+                    }
+                }
+                if (playerTeleporting is not null)
+                    if (!args.Parsers[0].IsMissing)
+                        if (playerTeleporting.PlayerName == args[0] as string)
+                            break;
+            }
+
+            if (playerTeleporting is null)
+                return TextCommandResult.Success($"Request not found", "12");
+
+            if (tpaCooldowns.TryGetValue(playerTeleporting.PlayerUID, out int secondsRemaing))
+                return TextCommandResult.Success($"Tpa command is still on cooldown for {playerTeleporting.PlayerName}", "7");
+
+            EntityPos playerLastPosition = playerTeleporting.Entity.Pos.Copy();
+            float playerLastHealth = playerTeleporting.Entity.GetBehavior<EntityBehaviorHealth>()?.Health ?? 0;
+            if (playerLastHealth <= 0 && !Configuration.tpaCommandCanReceiveDamage)
+                return TextCommandResult.Success($"Cannot teleport, {playerTeleporting.PlayerName} health is invalid", "3");
+
+            if (tpaDelays.TryGetValue(player.PlayerUID, out _))
+                if (!tpaDelays[player.PlayerUID].Contains(playerTeleporting.PlayerUID))
+                    tpaDelays[player.PlayerUID].Add(playerTeleporting.PlayerUID);
+                else
+                    return TextCommandResult.Success($"The request already exists for {playerTeleporting.PlayerUID}", "14");
+            else
+                tpaDelays[player.PlayerUID] = [playerTeleporting.PlayerUID];
+
+            long tickId = 0;
+            long tickCooldownId = 0;
+
+            uint ticksPassed = 0;
+
+            void OnTpaCooldownTick(float obj)
+            {
+                if (tpaCooldowns.TryGetValue(playerTeleporting.PlayerUID, out _))
+                {
+                    tpaCooldowns[playerTeleporting.PlayerUID] -= 1;
+                    if (tpaCooldowns[playerTeleporting.PlayerUID] <= 0)
+                    {
+                        tpaCooldowns.Remove(playerTeleporting.PlayerUID);
+                        serverAPI.Event.UnregisterGameTickListener(tickCooldownId);
+                    }
+                }
+                else tpaCooldowns[playerTeleporting.PlayerUID] = Configuration.tpaCooldown;
+            }
+            void OnTpaAcceptTick(float obj)
+            {
+                void RemoveDelay()
+                {
+                    if (tpaDelays.TryGetValue(player.PlayerUID, out _))
+                    {
+                        tpaDelays[player.PlayerUID].Remove(playerTeleporting.PlayerUID);
+                        if (tpaDelays[player.PlayerUID].Count == 0)
+                            tpaDelays.Remove(player.PlayerUID);
+                    }
+                }
+                void ResetCooldown()
+                {
+                    if (Configuration.tpaCommandResetCooldownOnCancellation)
+                        tpaCooldowns.Remove(playerTeleporting.PlayerUID);
+                }
+
+                if (tpaDelays.TryGetValue(player.PlayerUID, out List<string> requests))
+                {
+                    bool stillInDelay = false;
+                    foreach (string request in requests)
+                    {
+                        if (request == playerTeleporting.PlayerUID)
+                        {
+                            stillInDelay = true;
+                            break;
+                        }
+                    }
+
+                    if (!stillInDelay)
+                    {
+                        RemoveDelay();
+                        ResetCooldown();
+                        (playerTeleporting as IServerPlayer).SendMessage(0, $"Teleport cancelled, by {player.PlayerName}", EnumChatType.CommandError);
+                        serverAPI.Event.UnregisterGameTickListener(tickId);
+                        return;
+                    }
+                }
+                else
+                {
+                    RemoveDelay();
+                    ResetCooldown();
+                    (playerTeleporting as IServerPlayer).SendMessage(0, $"Teleport cancelled, by {player.PlayerName}", EnumChatType.CommandError);
+                    serverAPI.Event.UnregisterGameTickListener(tickId);
+                    return;
+                }
+
+                EntityPos playerActualPosition = playerTeleporting.Entity.Pos.Copy();
+                float playerActualHealth = playerTeleporting.Entity.GetBehavior<EntityBehaviorHealth>()?.Health ?? 0;
+
+                if (Configuration.enableExtendedLogs)
+                {
+                    Debug.Log($"{playerTeleporting.PlayerName}: POS: {playerLastPosition.XYZ},{playerActualPosition.XYZ}");
+                    Debug.Log($"{playerTeleporting.PlayerName}: Health: {playerLastHealth},{playerActualHealth}");
+                }
+
+                if (!Configuration.tpaCommandCanMove)
+                {
+                    if (playerActualPosition.XYZ != playerLastPosition.XYZ)
+                    {
+                        RemoveDelay();
+                        (playerTeleporting as IServerPlayer).SendMessage(0, "Teleport canceled, because you moved", EnumChatType.CommandError);
+                        serverAPI.Event.UnregisterGameTickListener(tickId);
+
+                        if (Configuration.enableExtendedLogs)
+                            Debug.Log($"{playerTeleporting.PlayerName} moved during tpa: {playerActualPosition.XYZ} : {playerLastPosition.XYZ}");
+                        return;
+                    }
+                }
+
+                if (!Configuration.tpaCommandCanReceiveDamage)
+                {
+                    // This is necessary because the health system keep changing between server ticks for some fucking reason
+                    if (Math.Abs(playerLastHealth - playerActualHealth) > 0.1)
+                    {
+                        RemoveDelay();
+                        ResetCooldown();
+                        (playerTeleporting as IServerPlayer).SendMessage(0, "Teleport canceled, because you received damage", EnumChatType.CommandError);
+                        serverAPI.Event.UnregisterGameTickListener(tickId);
+
+                        if (Configuration.enableExtendedLogs)
+                            Debug.Log($"{playerTeleporting.PlayerName} received damage during tpa: {playerActualHealth} : {playerLastHealth}");
+                        return;
+                    }
+
+                    playerLastHealth = playerActualHealth;
+                }
+
+                ticksPassed++;
+                if (ticksPassed >= Configuration.tpaCommandDelay)
+                {
+                    if (tpaDelays.TryGetValue(player.PlayerUID, out _))
+                        tpaDelays[player.PlayerUID].Remove(playerTeleporting.PlayerUID);
+                    if (tpaDelays[player.PlayerUID].Count == 0)
+                        tpaDelays.Remove(player.PlayerUID);
+
+                    if (Configuration.enableBackForTpa)
+                        Back.InvokePlayerTeleported(playerTeleporting as IServerPlayer, playerTeleporting.Entity.Pos.Copy());
+                    playerTeleporting.Entity.TeleportTo(player.Entity.Pos);
+                    serverAPI.Event.UnregisterGameTickListener(tickId);
+                }
+            }
+            tickId = serverAPI.Event.RegisterGameTickListener(OnTpaAcceptTick, 1000, 0);
+
+            tpaRequests[player.PlayerUID].Remove(playerTeleporting.PlayerUID);
+            if (tpaRequests[player.PlayerUID].Count == 0)
+                tpaRequests.Remove(player.PlayerUID);
+
+            if (Configuration.tpaCooldown > 0)
+                tickCooldownId = serverAPI.Event.RegisterGameTickListener(OnTpaCooldownTick, 1000, 0);
+
+            (playerTeleporting as IServerPlayer).SendMessage(0, $"Request accepted don't move for {Configuration.tpaCommandDelay} seconds", EnumChatType.Notification);
+            return TextCommandResult.Success($"Request accepted: {playerTeleporting.PlayerName}", "13");
+        }
+        return TextCommandResult.Success($"No requests", "11");
+    }
+
+    private TextCommandResult TpaDenyCommand(TextCommandCallingArgs args)
+    {
+        IServerPlayer player = args.Caller.Player as IServerPlayer;
+
+        if (tpaRequests.TryGetValue(player.PlayerUID, out List<string> playerRequests))
+        {
+            IPlayer playerTeleporting = null;
+            foreach (string playerRequestUid in playerRequests)
+            {
+                foreach (IPlayer selectedPlayer in serverAPI.World.AllOnlinePlayers)
+                {
+                    if (playerRequestUid == selectedPlayer.PlayerUID)
+                    {
+                        playerTeleporting = selectedPlayer;
+                        break;
+                    }
+                }
+                if (playerTeleporting is not null)
+                    if (!args.Parsers[0].IsMissing)
+                        if (playerTeleporting.PlayerName == args[0] as string)
+                            break;
+            }
+
+            string nameRemoved = null;
+            if (playerTeleporting is null)
+            {
+                string requestUid = tpaRequests[player.PlayerUID][^1];
+                foreach (IPlayer selectedPlayer in serverAPI.World.AllOnlinePlayers)
+                {
+                    if (requestUid == selectedPlayer.PlayerUID)
+                    {
+                        nameRemoved = selectedPlayer.PlayerName;
+                        break;
+                    }
+                }
+                tpaRequests[player.PlayerUID].RemoveAt(tpaRequests[player.PlayerUID].Count - 1);
+            }
+            else
+            {
+                foreach (string requestUid in tpaRequests[player.PlayerUID])
+                {
+                    if (requestUid == playerTeleporting.PlayerUID)
+                    {
+                        tpaRequests[player.PlayerUID].Remove(requestUid);
+                        nameRemoved = playerTeleporting.PlayerName;
+                        break;
+                    }
+                }
+            }
+
+            if (nameRemoved is null)
+                return TextCommandResult.Success($"Request cannot be found", "14");
+            else
+                return TextCommandResult.Success($"Request denied: {playerTeleporting.PlayerName}", "15");
+        }
+
+        return TextCommandResult.Success($"No requests", "11");
+    }
+
+    private TextCommandResult TpaCancelCommand(TextCommandCallingArgs args)
+    {
+        IServerPlayer player = args.Caller.Player as IServerPlayer;
+
+        if (tpaDelays.TryGetValue(player.PlayerUID, out List<string> playerRequests))
+        {
+            IPlayer playerTeleporting = null;
+            foreach (string playerRequestUid in playerRequests)
+            {
+                foreach (IPlayer selectedPlayer in serverAPI.World.AllOnlinePlayers)
+                {
+                    if (playerRequestUid == selectedPlayer.PlayerUID)
+                    {
+                        playerTeleporting = selectedPlayer;
+                        break;
+                    }
+                }
+                if (playerTeleporting is not null)
+                    if (!args.Parsers[0].IsMissing)
+                        if (playerTeleporting.PlayerName == args[0] as string)
+                            break;
+            }
+
+            if (playerTeleporting is null)
+                return TextCommandResult.Success($"Teleport not found", "12");
+
+            tpaDelays[player.PlayerUID].Remove(playerTeleporting.PlayerUID);
+            if (tpaDelays[player.PlayerUID].Count == 0)
+                tpaDelays.Remove(player.PlayerUID);
+
+            return TextCommandResult.Success($"{playerTeleporting.PlayerName} teleport cancelled", "16");
+        }
+        else
+            return TextCommandResult.Success($"No teleport to cancel", "17");
+    }
+}
