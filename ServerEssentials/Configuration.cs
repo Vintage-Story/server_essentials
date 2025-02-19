@@ -98,6 +98,7 @@ public static class Configuration
     public static int tpaTimeout = 10;
     public static bool tpaCommandCanMove = false;
     public static bool tpaCommandCanReceiveDamage = false;
+    public static bool tpaCommandResetCooldownOnCancellation = true;
     public static bool enableTpaAcceptCommand = true;
     public static bool enableTpaDenyCommand = true;
     public static bool enableTpaCancelCommand = true;
@@ -216,6 +217,13 @@ public static class Configuration
                 else if (value is not bool) Debug.Log($"CONFIGURATION ERROR: tpaCommandCanReceiveDamage is not boolean is {value.GetType()}");
                 else tpaCommandCanReceiveDamage = (bool)value;
             else Debug.Log("CONFIGURATION ERROR: tpaCommandCanReceiveDamage not set");
+        }
+        { //tpaCommandResetCooldownOnCancellation
+            if (baseConfigs.TryGetValue("tpaCommandResetCooldownOnCancellation", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: tpaCommandResetCooldownOnCancellation is null");
+                else if (value is not bool) Debug.Log($"CONFIGURATION ERROR: tpaCommandResetCooldownOnCancellation is not boolean is {value.GetType()}");
+                else tpaCommandResetCooldownOnCancellation = (bool)value;
+            else Debug.Log("CONFIGURATION ERROR: tpaCommandResetCooldownOnCancellation not set");
         }
         { //enableTpaAcceptCommand
             if (baseConfigs.TryGetValue("enableTpaAcceptCommand", out object value))

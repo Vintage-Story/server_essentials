@@ -15,6 +15,7 @@
     "tpaTimeout": 10,
     "tpaCommandCanMove": false,
     "tpaCommandCanReceiveDamage": false,
+    "tpaCommandResetCooldownOnCancellation": true,
     "enableTpaAcceptCommand": true,
     "enableTpaDenyCommand": true,
     "enableTpaCancelCommand": true,
