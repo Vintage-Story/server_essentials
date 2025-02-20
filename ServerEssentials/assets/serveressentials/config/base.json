@@ -22,9 +22,14 @@
 
     "enableBackCommand": true,
     "backCooldown": 120,
+    "backCommandDelay": 5,
+    "backCommandDuration": 30,
+    "backCommandCanMove": true,
+    "backCommandCanReceiveDamage": true,
     "enableBackForHome": true,
     "enableBackForTpa": true,
     "enableBackForDeath": true,
+    "enableBackResycle": false,
     
     "enableExtendedLogs": true
 }

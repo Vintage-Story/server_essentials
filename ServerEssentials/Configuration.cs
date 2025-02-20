@@ -337,4 +337,87 @@ public static class Configuration
         }
     }
     #endregion
+
+    #region translations
+    #region back
+    public static string translationBackCancelledDueMoving = "Teleport canceled, because you moved";
+    public static string translationBackCancelledDueDamage = "Teleport canceled, because you received damage";
+    public static string translationBackHealthInvalid = "Cannot teleport, your health is invalid";
+    public static string translationBackTeleporting = "Teleporting to previously position...";
+    public static string translationBackNoBackAvailable = "No previously position to go back!";
+    #endregion
+    #region home
+    public static string translationHomeCancelledDueMoving = "Teleport canceled, because you moved";
+    public static string translationHomeCancelledDueDamage = "Teleport canceled, because you received damage";
+    public static string translationHomeMaxHomesReached = "Max homes reached";
+    public static string translationHomeHomeSet = "Home Set!";
+    public static string translationHomeHomeNotSet = "Home not set!";
+    public static string translationHomeHomeRemoved = "Home removed!";
+    public static string translationHomeHomeInvalid = "Invalid home!";
+    public static string translationHomeNoHomes = "You don't have any home set!";
+    public static string translationHomeHomesList = "Your homes:";
+    public static string translationHomeCooldown = "Home command is still on cooldown: {0} seconds remaining...";
+    public static string translationHomeTeleporting = "Teleporting to {0}...";
+    public static string translationHomeHealthInvalid = "Cannot teleport, your health is invalid";
+    #endregion
+    #region tpa
+    public static string translationTpaCancelledDueMoving = "Teleport canceled, because you moved";
+    public static string translationTpaCancelledDueDamage = "Teleport canceled, because you received damage";
+    public static string translationTpaOutRequestNotification = "{0} send you a tpa request, /tpaaccept or /tpadeny";
+    public static string translationTpaRequestExpired = "{0} Tpa has expired";
+    public static string translationTpaRequestCancelled = "Teleport cancelled, by {0}";
+    public static string translationTpaRequestAccepted = "Request accepted don't move for {0} seconds";
+    public static string translationTpaCooldown = "Tpa command is still on cooldown: {0} seconds remaining...";
+    public static string translationTpaMissingPlayer = "Missing player name";
+    public static string translationTpaNotFound = "{0} not found";
+    public static string translationTpaSent = "Tpa request send to {0}";
+    public static string translationTpaReqiestNotFound = "Request not found";
+    public static string translationTpaRequesterOnCooldown = "Tpa command is still on cooldown for {}";
+    public static string translationTpaRequesterHealthInvalid = "Cannot teleport, {0} health is invalid";
+    public static string translationTpaAlreadyChanneling = "The request already exists for {0}";
+    public static string translationTpaAccepted = "Request accepted: {0}";
+    public static string translationTpaNoRequests = "No requests";
+    public static string translationTpaRequestNotFound = "Request cannot be found";
+    public static string translationTpaRequestDenied = "Request denied: {0}";
+    public static string translationTpaNoRequestToCancel = "No teleport to cancel";
+    public static string translationTpaCancelled = "{0} teleport cancelled";
+    #endregion
+    public static void UpdateTranslationsConfigurations(ICoreAPI api)
+    {
+        Dictionary<string, object> baseConfigs = LoadConfigurationByDirectoryAndName(
+            api,
+            "ModConfig/ServerEssentials/config",
+            "translations",
+            "serveressentials:config/translations.json"
+        );
+        { //translationBackCancelledDueMoving
+            if (baseConfigs.TryGetValue("translationBackCancelledDueMoving", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: translationBackCancelledDueMoving is null");
+                else if (value is not string) Debug.Log($"CONFIGURATION ERROR: translationBackCancelledDueMoving is not string is {value.GetType()}");
+                else translationBackCancelledDueMoving = (string)value;
+            else Debug.Log("CONFIGURATION ERROR: translationBackCancelledDueMoving not set");
+        }
+        { //translationBackCancelledDueDamage
+            if (baseConfigs.TryGetValue("translationBackCancelledDueDamage", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: translationBackCancelledDueDamage is null");
+                else if (value is not string) Debug.Log($"CONFIGURATION ERROR: translationBackCancelledDueDamage is not string is {value.GetType()}");
+                else translationBackCancelledDueDamage = (string)value;
+            else Debug.Log("CONFIGURATION ERROR: translationBackCancelledDueDamage not set");
+        }
+        { //translationHomeCancelledDueMoving
+            if (baseConfigs.TryGetValue("translationHomeCancelledDueMoving", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: translationHomeCancelledDueMoving is null");
+                else if (value is not string) Debug.Log($"CONFIGURATION ERROR: translationHomeCancelledDueMoving is not string is {value.GetType()}");
+                else translationHomeCancelledDueMoving = (string)value;
+            else Debug.Log("CONFIGURATION ERROR: translationHomeCancelledDueMoving not set");
+        }
+        { //translationHomeCancelledDueDamage
+            if (baseConfigs.TryGetValue("translationHomeCancelledDueDamage", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: translationHomeCancelledDueDamage is null");
+                else if (value is not string) Debug.Log($"CONFIGURATION ERROR: translationHomeCancelledDueDamage is not string is {value.GetType()}");
+                else translationHomeCancelledDueDamage = (string)value;
+            else Debug.Log("CONFIGURATION ERROR: translationHomeCancelledDueDamage not set");
+        }
+    }
+    #endregion
 }

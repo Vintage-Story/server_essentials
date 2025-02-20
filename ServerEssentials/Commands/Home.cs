@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
@@ -96,7 +97,7 @@ public class Home
         Dictionary<string, string> playerHomes = data == null ? [] : SerializerUtil.Deserialize<Dictionary<string, string>>(data);
 
         if (playerHomes.Count >= Configuration.maxHomes)
-            return TextCommandResult.Success("Max homes reached", "0");
+            return TextCommandResult.Success(Configuration.translationHomeMaxHomesReached, "0");
 
         string homeName = "home";
         if (!args.Parsers[0].IsMissing)
@@ -106,7 +107,7 @@ public class Home
 
         serverAPI.WorldManager.SaveGame.StoreData($"ServerEssentials_homes_{player.PlayerUID}", SerializerUtil.Serialize(playerHomes));
 
-        return TextCommandResult.Success("Home Set!", "1");
+        return TextCommandResult.Success(Configuration.translationHomeHomeSet, "1");
     }
 
     private TextCommandResult HomeCommand(TextCommandCallingArgs args)
@@ -114,7 +115,7 @@ public class Home
         IServerPlayer player = args.Caller.Player as IServerPlayer;
 
         if (homeCooldowns.TryGetValue(player.PlayerUID, out int secondsRemaing))
-            return TextCommandResult.Success($"Home command is still on cooldown: {secondsRemaing} seconds remaining...", "7");
+            return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationHomeCooldown, secondsRemaing).ToString(), "7");
 
         byte[] data = serverAPI.WorldManager.SaveGame.GetData($"ServerEssentials_homes_{player.PlayerUID}");
         Dictionary<string, string> playerHomes = data == null ? [] : SerializerUtil.Deserialize<Dictionary<string, string>>(data);
@@ -132,13 +133,13 @@ public class Home
                 if (Configuration.enableBackForHome)
                     Back.InvokePlayerTeleported(player, player.Entity.Pos.Copy());
                 player.Entity.TeleportTo(new Vec3d(coordinates[0], coordinates[1], coordinates[2]));
-                return TextCommandResult.Success($"Teleporting to {homeName}...", "2");
+                return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationHomeTeleporting, homeName).ToString(), "2");
             }
 
             EntityPos playerLastPosition = player.Entity.Pos.Copy();
             float playerLastHealth = player.Entity.GetBehavior<EntityBehaviorHealth>()?.Health ?? 0;
             if (playerLastHealth <= 0 && !Configuration.homeCommandCanReceiveDamage)
-                return TextCommandResult.Success($"Cannot teleport, your health is invalid", "3");
+                return TextCommandResult.Success(Configuration.translationHomeHealthInvalid, "3");
 
             long tickId = 0;
             long tickCooldownId = 0;
@@ -170,7 +171,7 @@ public class Home
                 {
                     if (playerActualPosition.XYZ != playerLastPosition.XYZ)
                     {
-                        player.SendMessage(0, "Teleport canceled, because you moved", EnumChatType.CommandError);
+                        player.SendMessage(0, Configuration.translationHomeCancelledDueMoving, EnumChatType.CommandError);
                         serverAPI.Event.UnregisterGameTickListener(tickId);
                         return;
                     }
@@ -181,7 +182,7 @@ public class Home
                     // This is necessary because the health system keep changing between server ticks for some fucking reason
                     if (Math.Abs(playerLastHealth - playerActualHealth) > 0.1)
                     {
-                        player.SendMessage(0, "Teleport canceled, because you received damage", EnumChatType.CommandError);
+                        player.SendMessage(0, Configuration.translationHomeCancelledDueDamage, EnumChatType.CommandError);
                         serverAPI.Event.UnregisterGameTickListener(tickId);
                         return;
                     }
@@ -203,10 +204,10 @@ public class Home
             if (Configuration.homeCooldown > 0)
                 tickCooldownId = serverAPI.Event.RegisterGameTickListener(OnHomeCooldownTick, 1000, 0);
 
-            return TextCommandResult.Success($"Teleporting to {homeName}...", "2");
+            return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationHomeTeleporting, homeName).ToString(), "2");
         }
         else
-            return TextCommandResult.Success("Home not set!", "2");
+            return TextCommandResult.Success(Configuration.translationHomeHomeNotSet, "2");
     }
 
     private TextCommandResult DelHomeCommand(TextCommandCallingArgs args)
@@ -224,10 +225,10 @@ public class Home
         {
             playerHomes.Remove(homeName);
             serverAPI.WorldManager.SaveGame.StoreData($"ServerEssentials_homes_{player.PlayerUID}", SerializerUtil.Serialize(playerHomes));
-            return TextCommandResult.Success("Home removed!", "3");
+            return TextCommandResult.Success(Configuration.translationHomeHomeRemoved, "3");
         }
         else
-            return TextCommandResult.Success("Invalid home!", "2");
+            return TextCommandResult.Success(Configuration.translationHomeHomeInvalid, "2");
     }
 
     private TextCommandResult ListHomeCommand(TextCommandCallingArgs args)
@@ -238,9 +239,9 @@ public class Home
         Dictionary<string, string> playerHomes = data == null ? [] : SerializerUtil.Deserialize<Dictionary<string, string>>(data);
 
         if (playerHomes.Count == 0)
-            return TextCommandResult.Success("You don't have any home set!", "5");
+            return TextCommandResult.Success(Configuration.translationHomeNoHomes, "5");
 
-        string homes = "Your homes:";
+        string homes = Configuration.translationHomeHomesList;
         foreach (KeyValuePair<string, string> keyValuePair in playerHomes)
         {
             homes += Environment.NewLine + keyValuePair.Key;

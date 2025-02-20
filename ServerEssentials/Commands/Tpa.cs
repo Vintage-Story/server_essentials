@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Server;
@@ -101,10 +102,10 @@ public class TPA
         IServerPlayer player = args.Caller.Player as IServerPlayer;
 
         if (tpaCooldowns.TryGetValue(player.PlayerUID, out int secondsRemaing))
-            return TextCommandResult.Success($"Tpa command is still on cooldown: {secondsRemaing} seconds remaining...", "7");
+            return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationTpaCooldown, secondsRemaing).ToString(), "7");
 
         if (args.Parsers[0].IsMissing)
-            return TextCommandResult.Success($"Missing player name", "8");
+            return TextCommandResult.Success(Configuration.translationTpaMissingPlayer, "8");
 
         IPlayer playerToTeleport = null;
         foreach (IPlayer teleportPlayer in serverAPI.World.AllOnlinePlayers)
@@ -116,9 +117,9 @@ public class TPA
             }
         }
         if (playerToTeleport is null)
-            return TextCommandResult.Success($"{args[0] as string} not found", "9");
+            return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationTpaNotFound, args[0] as string).ToString(), "9");
 
-        (playerToTeleport as IServerPlayer).SendMessage(0, $"{player.PlayerName} send you a tpa request, /tpaaccept or /tpadeny", EnumChatType.Notification);
+        (playerToTeleport as IServerPlayer).SendMessage(0, new StringBuilder().AppendFormat(Configuration.translationTpaOutRequestNotification, player.PlayerName).ToString(), EnumChatType.Notification);
         if (tpaRequests.TryGetValue(playerToTeleport.PlayerUID, out _))
             tpaRequests[playerToTeleport.PlayerUID].Add(player.PlayerUID);
         else
@@ -150,8 +151,8 @@ public class TPA
                         tpaRequests.Remove(playerToTeleport.PlayerUID);
 
                     serverAPI.Event.UnregisterGameTickListener(tickid);
-                    player.SendMessage(0, $"{playerToTeleport.PlayerName} Tpa has expired", EnumChatType.Notification);
-                    (playerToTeleport as IServerPlayer).SendMessage(0, $"{player.PlayerName} Tpa has expired", EnumChatType.Notification);
+                    player.SendMessage(0, new StringBuilder().AppendFormat(Configuration.translationTpaRequestExpired, playerToTeleport.PlayerName).ToString(), EnumChatType.Notification);
+                    (playerToTeleport as IServerPlayer).SendMessage(0, new StringBuilder().AppendFormat(Configuration.translationTpaRequestExpired, player.PlayerName).ToString(), EnumChatType.Notification);
                 }
             }
             // Expired
@@ -162,7 +163,7 @@ public class TPA
 
         tickid = serverAPI.Event.RegisterGameTickListener(OnTpaTick, 1000, 1000);
 
-        return TextCommandResult.Success($"Tpa request send to {playerToTeleport.PlayerName}", "10");
+        return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationTpaSent, playerToTeleport.PlayerName).ToString(), "10");
     }
 
     private TextCommandResult TpaAcceptCommand(TextCommandCallingArgs args)
@@ -189,21 +190,21 @@ public class TPA
             }
 
             if (playerTeleporting is null)
-                return TextCommandResult.Success($"Request not found", "12");
+                return TextCommandResult.Success(Configuration.translationTpaReqiestNotFound, "12");
 
             if (tpaCooldowns.TryGetValue(playerTeleporting.PlayerUID, out int secondsRemaing))
-                return TextCommandResult.Success($"Tpa command is still on cooldown for {playerTeleporting.PlayerName}", "7");
+                return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationTpaRequesterOnCooldown, playerTeleporting.PlayerName).ToString(), "7");
 
             EntityPos playerLastPosition = playerTeleporting.Entity.Pos.Copy();
             float playerLastHealth = playerTeleporting.Entity.GetBehavior<EntityBehaviorHealth>()?.Health ?? 0;
             if (playerLastHealth <= 0 && !Configuration.tpaCommandCanReceiveDamage)
-                return TextCommandResult.Success($"Cannot teleport, {playerTeleporting.PlayerName} health is invalid", "3");
+                return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationTpaRequesterHealthInvalid, playerTeleporting.PlayerName).ToString(), "3");
 
             if (tpaDelays.TryGetValue(player.PlayerUID, out _))
                 if (!tpaDelays[player.PlayerUID].Contains(playerTeleporting.PlayerUID))
                     tpaDelays[player.PlayerUID].Add(playerTeleporting.PlayerUID);
                 else
-                    return TextCommandResult.Success($"The request already exists for {playerTeleporting.PlayerUID}", "14");
+                    return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationTpaAlreadyChanneling, playerTeleporting.PlayerName).ToString(), "14");
             else
                 tpaDelays[player.PlayerUID] = [playerTeleporting.PlayerUID];
 
@@ -258,7 +259,7 @@ public class TPA
                     {
                         RemoveDelay();
                         ResetCooldown();
-                        (playerTeleporting as IServerPlayer).SendMessage(0, $"Teleport cancelled, by {player.PlayerName}", EnumChatType.CommandError);
+                        (playerTeleporting as IServerPlayer).SendMessage(0, new StringBuilder().AppendFormat(Configuration.translationTpaRequestCancelled, player.PlayerName).ToString(), EnumChatType.CommandError);
                         serverAPI.Event.UnregisterGameTickListener(tickId);
                         return;
                     }
@@ -267,7 +268,7 @@ public class TPA
                 {
                     RemoveDelay();
                     ResetCooldown();
-                    (playerTeleporting as IServerPlayer).SendMessage(0, $"Teleport cancelled, by {player.PlayerName}", EnumChatType.CommandError);
+                    (playerTeleporting as IServerPlayer).SendMessage(0, new StringBuilder().AppendFormat(Configuration.translationTpaRequestCancelled, player.PlayerName).ToString(), EnumChatType.CommandError);
                     serverAPI.Event.UnregisterGameTickListener(tickId);
                     return;
                 }
@@ -286,7 +287,7 @@ public class TPA
                     if (playerActualPosition.XYZ != playerLastPosition.XYZ)
                     {
                         RemoveDelay();
-                        (playerTeleporting as IServerPlayer).SendMessage(0, "Teleport canceled, because you moved", EnumChatType.CommandError);
+                        (playerTeleporting as IServerPlayer).SendMessage(0, Configuration.translationTpaCancelledDueMoving, EnumChatType.CommandError);
                         serverAPI.Event.UnregisterGameTickListener(tickId);
 
                         if (Configuration.enableExtendedLogs)
@@ -302,7 +303,7 @@ public class TPA
                     {
                         RemoveDelay();
                         ResetCooldown();
-                        (playerTeleporting as IServerPlayer).SendMessage(0, "Teleport canceled, because you received damage", EnumChatType.CommandError);
+                        (playerTeleporting as IServerPlayer).SendMessage(0, Configuration.translationTpaCancelledDueDamage, EnumChatType.CommandError);
                         serverAPI.Event.UnregisterGameTickListener(tickId);
 
                         if (Configuration.enableExtendedLogs)
@@ -336,10 +337,10 @@ public class TPA
             if (Configuration.tpaCooldown > 0)
                 tickCooldownId = serverAPI.Event.RegisterGameTickListener(OnTpaCooldownTick, 1000, 0);
 
-            (playerTeleporting as IServerPlayer).SendMessage(0, $"Request accepted don't move for {Configuration.tpaCommandDelay} seconds", EnumChatType.Notification);
-            return TextCommandResult.Success($"Request accepted: {playerTeleporting.PlayerName}", "13");
+            (playerTeleporting as IServerPlayer).SendMessage(0, new StringBuilder().AppendFormat(Configuration.translationTpaRequestAccepted, Configuration.tpaCommandDelay).ToString(), EnumChatType.Notification);
+            return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationTpaAccepted, playerTeleporting.PlayerName).ToString(), "13");
         }
-        return TextCommandResult.Success($"No requests", "11");
+        return TextCommandResult.Success(Configuration.translationTpaNoRequests, "11");
     }
 
     private TextCommandResult TpaDenyCommand(TextCommandCallingArgs args)
@@ -393,12 +394,12 @@ public class TPA
             }
 
             if (nameRemoved is null)
-                return TextCommandResult.Success($"Request cannot be found", "14");
+                return TextCommandResult.Success(Configuration.translationTpaRequestNotFound, "14");
             else
-                return TextCommandResult.Success($"Request denied: {playerTeleporting.PlayerName}", "15");
+                return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationTpaRequestDenied, playerTeleporting.PlayerName).ToString(), "15");
         }
 
-        return TextCommandResult.Success($"No requests", "11");
+        return TextCommandResult.Success(Configuration.translationTpaNoRequests, "11");
     }
 
     private TextCommandResult TpaCancelCommand(TextCommandCallingArgs args)
@@ -425,15 +426,15 @@ public class TPA
             }
 
             if (playerTeleporting is null)
-                return TextCommandResult.Success($"Teleport not found", "12");
+                return TextCommandResult.Success(Configuration.translationTpaRequestNotFound, "12");
 
             tpaDelays[player.PlayerUID].Remove(playerTeleporting.PlayerUID);
             if (tpaDelays[player.PlayerUID].Count == 0)
                 tpaDelays.Remove(player.PlayerUID);
 
-            return TextCommandResult.Success($"{playerTeleporting.PlayerName} teleport cancelled", "16");
+            return TextCommandResult.Success(new StringBuilder().AppendFormat(playerTeleporting.PlayerName).ToString(), "16");
         }
         else
-            return TextCommandResult.Success($"No teleport to cancel", "17");
+            return TextCommandResult.Success(Configuration.translationTpaNoRequestToCancel, "17");
     }
 }

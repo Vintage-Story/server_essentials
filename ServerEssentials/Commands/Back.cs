@@ -93,7 +93,7 @@ public class Back
             EntityPos playerLastPosition = player.Entity.Pos.Copy();
             float playerLastHealth = player.Entity.GetBehavior<EntityBehaviorHealth>()?.Health ?? 0;
             if (playerLastHealth <= 0 && !Configuration.homeCommandCanReceiveDamage)
-                return TextCommandResult.Success($"Cannot teleport, your health is invalid", "3");
+                return TextCommandResult.Success(Configuration.translationBackHealthInvalid, "3");
 
             long tickId = 0;
             long tickCooldownId = 0;
@@ -125,7 +125,7 @@ public class Back
                 {
                     if (playerActualPosition.XYZ != playerLastPosition.XYZ)
                     {
-                        player.SendMessage(0, "Teleport canceled, because you moved", EnumChatType.CommandError);
+                        player.SendMessage(0, Configuration.translationBackCancelledDueMoving, EnumChatType.CommandError);
                         serverAPI.Event.UnregisterGameTickListener(tickId);
                         return;
                     }
@@ -136,7 +136,7 @@ public class Back
                     // This is necessary because the health system keep changing between server ticks for some fucking reason
                     if (Math.Abs(playerLastHealth - playerActualHealth) > 0.1)
                     {
-                        player.SendMessage(0, "Teleport canceled, because you received damage", EnumChatType.CommandError);
+                        player.SendMessage(0, Configuration.translationBackCancelledDueDamage, EnumChatType.CommandError);
                         serverAPI.Event.UnregisterGameTickListener(tickId);
                         return;
                     }
@@ -161,10 +161,10 @@ public class Back
             if (Configuration.backCooldown > 0)
                 tickCooldownId = serverAPI.Event.RegisterGameTickListener(OnBackCooldownTick, 1000, 0);
 
-            return TextCommandResult.Success($"Teleporting to previously position...", "2");
+            return TextCommandResult.Success(Configuration.translationBackTeleporting, "2");
         }
         else
-            return TextCommandResult.Success("No previously position to go back!", "2");
+            return TextCommandResult.Success(Configuration.translationBackNoBackAvailable, "2");
     }
 
     private void BackPlayerDeath(IServerPlayer byPlayer, DamageSource damageSource)
