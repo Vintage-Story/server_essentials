@@ -163,10 +163,13 @@ public class Home
                 if (homeCooldowns.TryGetValue(player.PlayerUID, out _))
                 {
                     homeCooldowns[player.PlayerUID] -= 1;
-                    if (homeCooldowns[player.PlayerUID] <= 0) homeCooldowns.Remove(player.PlayerUID);
-                    serverAPI.Event.UnregisterGameTickListener(tickCooldownId);
+                    if (homeCooldowns[player.PlayerUID] <= 0)
+                    {
+                        homeCooldowns.Remove(player.PlayerUID);
+                        serverAPI.Event.UnregisterGameTickListener(tickCooldownId);
+                    }
                 }
-                else homeCooldowns[player.PlayerUID] = Configuration.homeCooldown;
+                else serverAPI.Event.UnregisterGameTickListener(tickCooldownId);
             }
             void OnHomeTick(float obj)
             {
@@ -209,12 +212,15 @@ public class Home
                         Back.InvokePlayerTeleported(player, player.Entity.Pos.Copy());
                     player.Entity.TeleportTo(new Vec3d(coordinates[0], coordinates[1], coordinates[2]));
                     serverAPI.Event.UnregisterGameTickListener(tickId);
+                    if (Configuration.homeCooldown > 0)
+                    {
+                        homeCooldowns[player.PlayerUID] = Configuration.homeCooldown;
+                        tickCooldownId = serverAPI.Event.RegisterGameTickListener(OnHomeCooldownTick, 1000, 0);
+                    }
                 }
             }
 
             tickId = serverAPI.Event.RegisterGameTickListener(OnHomeTick, 1000, 1000);
-            if (Configuration.homeCooldown > 0)
-                tickCooldownId = serverAPI.Event.RegisterGameTickListener(OnHomeCooldownTick, 1000, 0);
 
             return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationHomeTeleporting, homeName).ToString(), "2");
         }
@@ -260,9 +266,9 @@ public class Home
             if (Configuration.ListHomeCommandShowCoords)
             {
                 double[] coordinates = [.. keyValuePair.Value.Split(',').Select(double.Parse)];
-                coordinates[0] = coordinates[0] - serverAPI.World.DefaultSpawnPosition.X;
-                coordinates[1] = coordinates[1] - serverAPI.World.DefaultSpawnPosition.Y;
-                coordinates[2] = coordinates[2] - serverAPI.World.DefaultSpawnPosition.Z;
+                coordinates[0] = Math.Round(coordinates[0] - serverAPI.World.DefaultSpawnPosition.X);
+                coordinates[1] = Math.Round(coordinates[1] - serverAPI.World.DefaultSpawnPosition.Y);
+                coordinates[2] = Math.Round(coordinates[2] - serverAPI.World.DefaultSpawnPosition.Z);
 
                 homes += $" : X:{coordinates[0]} Y:{coordinates[1]} Z{coordinates[2]}";
             }

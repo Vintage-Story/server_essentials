@@ -426,6 +426,7 @@ public static class Configuration
     public static string translationBackHealthInvalid = "Cannot teleport, your health is invalid";
     public static string translationBackTeleporting = "Teleporting to previously position...";
     public static string translationBackNoBackAvailable = "No previously position to go back!";
+    public static string translationBackCooldown = "Back command is still on cooldown: {0} seconds remaining...";
     public static string translationBackDescription = "Returns to your previous position before teleporting using /back";
     #endregion
     #region home
@@ -455,15 +456,15 @@ public static class Configuration
     public static string translationTpaRequestAccepted = "Request accepted don't move for {0} seconds";
     public static string translationTpaCooldown = "Tpa command is still on cooldown: {0} seconds remaining...";
     public static string translationTpaMissingPlayer = "Missing player name";
+    public static string translationTpaAlreadySent = "Already sent";
     public static string translationTpaNotFound = "{0} not found";
     public static string translationTpaSent = "Tpa request send to {0}";
-    public static string translationTpaReqiestNotFound = "Request not found";
-    public static string translationTpaRequesterOnCooldown = "Tpa command is still on cooldown for {}";
+    public static string translationTpaRequestNotFound = "Request not found";
+    public static string translationTpaRequesterOnCooldown = "Tpa command is still on cooldown for {0}";
     public static string translationTpaRequesterHealthInvalid = "Cannot teleport, {0} health is invalid";
     public static string translationTpaAlreadyChanneling = "The request already exists for {0}";
     public static string translationTpaAccepted = "Request accepted: {0}";
     public static string translationTpaNoRequests = "No requests";
-    public static string translationTpaRequestNotFound = "Request cannot be found";
     public static string translationTpaRequestDenied = "Request denied: {0}";
     public static string translationTpaNoRequestToCancel = "No teleport to cancel";
     public static string translationTpaCancelled = "{0} teleport cancelled";
@@ -514,6 +515,13 @@ public static class Configuration
                 else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationBackNoBackAvailable is not string is {value.GetType()}");
                 else translationBackNoBackAvailable = (string)value;
             else Debug.Log("TRANSLATION ERROR: translationBackNoBackAvailable not set");
+        }
+        { //translationBackCooldown
+            if (baseConfigs.TryGetValue("translationBackCooldown", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationBackCooldown is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationBackCooldown is not string is {value.GetType()}");
+                else translationBackCooldown = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationBackCooldown not set");
         }
         { //translationBackDescription
             if (baseConfigs.TryGetValue("translationBackDescription", out object value))
@@ -690,6 +698,13 @@ public static class Configuration
                 else translationTpaMissingPlayer = (string)value;
             else Debug.Log("TRANSLATION ERROR: translationTpaMissingPlayer not set");
         }
+        { //translationTpaAlreadySent
+            if (baseConfigs.TryGetValue("translationTpaAlreadySent", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationTpaAlreadySent is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationTpaAlreadySent is not string is {value.GetType()}");
+                else translationTpaAlreadySent = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationTpaAlreadySent not set");
+        }
         { //translationTpaNotFound
             if (baseConfigs.TryGetValue("translationTpaNotFound", out object value))
                 if (value is null) Debug.Log("TRANSLATION ERROR: translationTpaNotFound is null");
@@ -704,12 +719,12 @@ public static class Configuration
                 else translationTpaSent = (string)value;
             else Debug.Log("TRANSLATION ERROR: translationTpaSent not set");
         }
-        { //translationTpaReqiestNotFound
-            if (baseConfigs.TryGetValue("translationTpaReqiestNotFound", out object value))
-                if (value is null) Debug.Log("TRANSLATION ERROR: translationTpaReqiestNotFound is null");
-                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationTpaReqiestNotFound is not string is {value.GetType()}");
-                else translationTpaReqiestNotFound = (string)value;
-            else Debug.Log("TRANSLATION ERROR: translationTpaReqiestNotFound not set");
+        { //translationTpaRequestNotFound
+            if (baseConfigs.TryGetValue("translationTpaRequestNotFound", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationTpaRequestNotFound is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationTpaRequestNotFound is not string is {value.GetType()}");
+                else translationTpaRequestNotFound = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationTpaRequestNotFound not set");
         }
         { //translationTpaRequesterOnCooldown
             if (baseConfigs.TryGetValue("translationTpaRequesterOnCooldown", out object value))

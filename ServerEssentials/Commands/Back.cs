@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Server;
@@ -9,7 +10,7 @@ namespace ServerEssentials.Commands;
 
 public class Back
 {
-    private static readonly ICoreServerAPI serverAPI;
+    private static ICoreServerAPI serverAPI;
 
     /// <summary>
     /// PlayerUID: [Player last position, seconds remaining]
@@ -21,7 +22,6 @@ public class Back
     /// </summary>
     private readonly Dictionary<string, int> backCooldowns = [];
 
-    public static event EventHandler PlayerTeleported;
     internal static void InvokePlayerTeleported(IServerPlayer player, EntityPos pos)
     {
         long tickId = 0;
@@ -61,6 +61,8 @@ public class Back
 
     public Back(ICoreServerAPI api)
     {
+        serverAPI = api;
+
         if (Configuration.enableBackCommand)
         {
             foreach (string syntax in Configuration.backSyntaxes)
@@ -89,11 +91,14 @@ public class Back
     {
         IServerPlayer player = args.Caller.Player as IServerPlayer;
 
+        if (backCooldowns.TryGetValue(player.PlayerUID, out int secondsRemaining))
+            return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationBackCooldown, secondsRemaining).ToString(), "7");
+
         if (backData.TryGetValue(player.PlayerUID, out KeyValuePair<EntityPos, int> data))
         {
             EntityPos playerLastPosition = player.Entity.Pos.Copy();
             float playerLastHealth = player.Entity.GetBehavior<EntityBehaviorHealth>()?.Health ?? 0;
-            if (playerLastHealth <= 0 && !Configuration.homeCommandCanReceiveDamage)
+            if (playerLastHealth <= 0 && !Configuration.backCommandCanReceiveDamage)
                 return TextCommandResult.Success(Configuration.translationBackHealthInvalid, "3");
 
             long tickId = 0;
@@ -106,10 +111,13 @@ public class Back
                 if (backCooldowns.TryGetValue(player.PlayerUID, out _))
                 {
                     backCooldowns[player.PlayerUID] -= 1;
-                    if (backCooldowns[player.PlayerUID] <= 0) backCooldowns.Remove(player.PlayerUID);
-                    serverAPI.Event.UnregisterGameTickListener(tickCooldownId);
+                    if (backCooldowns[player.PlayerUID] <= 0)
+                    {
+                        backCooldowns.Remove(player.PlayerUID);
+                        serverAPI.Event.UnregisterGameTickListener(tickCooldownId);
+                    }
                 }
-                else backCooldowns[player.PlayerUID] = Configuration.backCooldown;
+                else serverAPI.Event.UnregisterGameTickListener(tickCooldownId);
             }
             void OnBackTick(float obj)
             {
@@ -155,12 +163,16 @@ public class Back
 
                     player.Entity.TeleportTo(data.Key);
                     serverAPI.Event.UnregisterGameTickListener(tickId);
+
+                    if (Configuration.backCooldown > 0)
+                    {
+                        backCooldowns[player.PlayerUID] = Configuration.backCooldown;
+                        tickCooldownId = serverAPI.Event.RegisterGameTickListener(OnBackCooldownTick, 1000, 0);
+                    }
                 }
             }
 
             tickId = serverAPI.Event.RegisterGameTickListener(OnBackTick, 1000, 1000);
-            if (Configuration.backCooldown > 0)
-                tickCooldownId = serverAPI.Event.RegisterGameTickListener(OnBackCooldownTick, 1000, 0);
 
             return TextCommandResult.Success(Configuration.translationBackTeleporting, "2");
         }
