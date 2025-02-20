@@ -33,67 +33,79 @@ public class TPA
 
         if (Configuration.enableTpaCommand)
         {
-            // Create tpa command
-            api.ChatCommands.Create("tpa")
-            // Description
-            .WithDescription("Teleport to a player using /tpa playername")
-            // Chat privilege
-            .RequiresPrivilege(Privilege.chat)
-            // Only if is a valid player
-            .RequiresPlayer()
-            // Need a argument called home name or not
-            .WithArgs(new StringArgParser("playername", false))
-            // Function Handle
-            .HandleWith(TpaCommand);
-            Debug.Log($"Command created: /tpa");
+            foreach (string syntax in Configuration.tpaSyntaxes)
+            {
+                // Create tpa command
+                api.ChatCommands.Create(syntax)
+                // Description
+                .WithDescription(Configuration.translationTpaDescription)
+                // Chat privilege
+                .RequiresPrivilege(Privilege.chat)
+                // Only if is a valid player
+                .RequiresPlayer()
+                // Need a argument called home name or not
+                .WithArgs(new StringArgParser("playername", false))
+                // Function Handle
+                .HandleWith(TpaCommand);
+                Debug.Log($"Command created: /{syntax}");
+            }
         }
         if (Configuration.enableTpaAcceptCommand)
         {
-            // Create tpaaccept command
-            api.ChatCommands.Create("tpaaccept")
-            // Description
-            .WithDescription("Teleport to a player using /tpaaccept playername")
-            // Chat privilege
-            .RequiresPrivilege(Privilege.chat)
-            // Only if is a valid player
-            .RequiresPlayer()
-            // Need a argument called home name or not
-            .WithArgs(new StringArgParser("playername", false))
-            // Function Handle
-            .HandleWith(TpaAcceptCommand);
-            Debug.Log($"Command created: /tpaaccept");
+            foreach (string syntax in Configuration.tpaAcceptSyntaxes)
+            {
+                // Create tpaaccept command
+                api.ChatCommands.Create(syntax)
+                // Description
+                .WithDescription(Configuration.translationTpaAcceptDescription)
+                // Chat privilege
+                .RequiresPrivilege(Privilege.chat)
+                // Only if is a valid player
+                .RequiresPlayer()
+                // Need a argument called home name or not
+                .WithArgs(new StringArgParser("playername", false))
+                // Function Handle
+                .HandleWith(TpaAcceptCommand);
+                Debug.Log($"Command created: /{syntax}");
+            }
         }
         if (Configuration.enableTpaDenyCommand)
         {
-            // Create tpadeny command
-            api.ChatCommands.Create("tpadeny")
-            // Description
-            .WithDescription("Deny a teleport request /tpadeny playername")
-            // Chat privilege
-            .RequiresPrivilege(Privilege.chat)
-            // Only if is a valid player
-            .RequiresPlayer()
-            // Need a argument called home name or not
-            .WithArgs(new StringArgParser("playername", false))
-            // Function Handle
-            .HandleWith(TpaDenyCommand);
-            Debug.Log($"Command created: /tpadeny");
+            foreach (string syntax in Configuration.tpaDenySyntaxes)
+            {
+                // Create tpadeny command
+                api.ChatCommands.Create(syntax)
+                // Description
+                .WithDescription(Configuration.translationTpaDenyDescription)
+                // Chat privilege
+                .RequiresPrivilege(Privilege.chat)
+                // Only if is a valid player
+                .RequiresPlayer()
+                // Need a argument called home name or not
+                .WithArgs(new StringArgParser("playername", false))
+                // Function Handle
+                .HandleWith(TpaDenyCommand);
+                Debug.Log($"Command created: /{syntax}");
+            }
         }
         if (Configuration.enableTpaCancelCommand)
         {
-            // Create tpacancel command
-            api.ChatCommands.Create("tpacancel")
-            // Description
-            .WithDescription("Cancel a channeling teleport request /tpacancel playername")
-            // Chat privilege
-            .RequiresPrivilege(Privilege.chat)
-            // Only if is a valid player
-            .RequiresPlayer()
-            // Need a argument called home name or not
-            .WithArgs(new StringArgParser("playername", false))
-            // Function Handle
-            .HandleWith(TpaCancelCommand);
-            Debug.Log($"Command created: /tpacancel");
+            foreach (string syntax in Configuration.tpaDenySyntaxes)
+            {
+                // Create tpacancel command
+                api.ChatCommands.Create(syntax)
+                // Description
+                .WithDescription(Configuration.translationTpaCancelDescription)
+                // Chat privilege
+                .RequiresPrivilege(Privilege.chat)
+                // Only if is a valid player
+                .RequiresPlayer()
+                // Need a argument called home name or not
+                .WithArgs(new StringArgParser("playername", false))
+                // Function Handle
+                .HandleWith(TpaCancelCommand);
+                Debug.Log($"Command created: /{syntax}");
+            }
         }
     }
 

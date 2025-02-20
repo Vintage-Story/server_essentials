@@ -63,19 +63,20 @@ public class Back
     {
         if (Configuration.enableBackCommand)
         {
-            // Create tpa command
-            api.ChatCommands.Create("back")
-            // Description
-            .WithDescription("Returns to your previous position before teleporting using /back")
-            // Chat privilege
-            .RequiresPrivilege(Privilege.chat)
-            // Only if is a valid player
-            .RequiresPlayer()
-            // Need a argument called home name or not
-            .WithArgs(new StringArgParser("playername", false))
-            // Function Handle
-            .HandleWith(BackCommand);
-            Debug.Log("Command created: /back");
+            foreach (string syntax in Configuration.backSyntaxes)
+            {
+                // Create back command
+                api.ChatCommands.Create(syntax)
+                // Description
+                .WithDescription(Configuration.translationBackDescription)
+                // Chat privilege
+                .RequiresPrivilege(Privilege.chat)
+                // Only if is a valid player
+                .RequiresPlayer()
+                // Function Handle
+                .HandleWith(BackCommand);
+                Debug.Log($"Command created: /{syntax}");
+            }
         }
         if (Configuration.enableBackForDeath)
         {

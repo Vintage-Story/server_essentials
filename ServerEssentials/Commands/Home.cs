@@ -26,66 +26,78 @@ public class Home
 
         if (Configuration.enableSetHomeCommand)
         {
-            // Create sethome command
-            api.ChatCommands.Create("sethome")
-            // Description
-            .WithDescription("Set a home using /sethome homename")
-            // Chat privilege
-            .RequiresPrivilege(Privilege.chat)
-            // Only if is a valid player
-            .RequiresPlayer()
-            // Need a argument called home name or not
-            .WithArgs(new StringArgParser("homename", false))
-            // Function Handle
-            .HandleWith(SetHomeCommand);
+            foreach (string syntax in Configuration.setHomeSyntaxes)
+            {
+                // Create sethome command
+                api.ChatCommands.Create(syntax)
+                // Description
+                .WithDescription(Configuration.translationHomeDescription)
+                // Chat privilege
+                .RequiresPrivilege(Privilege.chat)
+                // Only if is a valid player
+                .RequiresPlayer()
+                // Need a argument called home name or not
+                .WithArgs(new StringArgParser("homename", false))
+                // Function Handle
+                .HandleWith(SetHomeCommand);
 
-            Debug.Log($"Command created: /sethome");
+                Debug.Log($"Command created: /{syntax}");
+            }
         }
         if (Configuration.enableHomeCommand)
         {
-            // Create home command
-            api.ChatCommands.Create("home")
-            // Description
-            .WithDescription("Teleport to a home using /home homename")
-            // Chat privilege
-            .RequiresPrivilege(Privilege.chat)
-            // Only if is a valid player
-            .RequiresPlayer()
-            // Need a argument called home name or not
-            .WithArgs(new StringArgParser("homename", false))
-            // Function Handle
-            .HandleWith(HomeCommand);
-            Debug.Log($"Command created: /home");
+            foreach (string syntax in Configuration.homeSyntaxes)
+            {
+                // Create home command
+                api.ChatCommands.Create(syntax)
+                // Description
+                .WithDescription(Configuration.translationHomeDescription)
+                // Chat privilege
+                .RequiresPrivilege(Privilege.chat)
+                // Only if is a valid player
+                .RequiresPlayer()
+                // Need a argument called home name or not
+                .WithArgs(new StringArgParser("homename", false))
+                // Function Handle
+                .HandleWith(HomeCommand);
+                Debug.Log($"Command created: /{syntax}");
+            }
         }
         if (Configuration.enableDelHomeCommand)
         {
-            // Create delhome command
-            api.ChatCommands.Create("delhome")
-            // Description
-            .WithDescription("Delete a home /delhome homename")
-            // Chat privilege
-            .RequiresPrivilege(Privilege.chat)
-            // Only if is a valid player
-            .RequiresPlayer()
-            // Need a argument called home name or not
-            .WithArgs(new StringArgParser("homename", false))
-            // Function Handle
-            .HandleWith(DelHomeCommand);
-            Debug.Log($"Command created: /delhome");
+            foreach (string syntax in Configuration.delHomeSyntaxes)
+            {
+                // Create delhome command
+                api.ChatCommands.Create(syntax)
+                // Description
+                .WithDescription(Configuration.translationDelHomeDescription)
+                // Chat privilege
+                .RequiresPrivilege(Privilege.chat)
+                // Only if is a valid player
+                .RequiresPlayer()
+                // Need a argument called home name or not
+                .WithArgs(new StringArgParser("homename", false))
+                // Function Handle
+                .HandleWith(DelHomeCommand);
+                Debug.Log($"Command created: /{syntax}");
+            }
         }
         if (Configuration.enableListHomeCommand)
         {
-            // Create listhome command
-            api.ChatCommands.Create("listhome")
-            // Description
-            .WithDescription("View the home lists")
-            // Chat privilege
-            .RequiresPrivilege(Privilege.chat)
-            // Only if is a valid player
-            .RequiresPlayer()
-            // Function Handle
-            .HandleWith(ListHomeCommand);
-            Debug.Log($"Command created: /listhome");
+            foreach (string syntax in Configuration.listHomeSyntaxes)
+            {
+                // Create listhome command
+                api.ChatCommands.Create(syntax)
+                // Description
+                .WithDescription(Configuration.translationListHomeDescription)
+                // Chat privilege
+                .RequiresPrivilege(Privilege.chat)
+                // Only if is a valid player
+                .RequiresPlayer()
+                // Function Handle
+                .HandleWith(ListHomeCommand);
+                Debug.Log($"Command created: /{syntax}");
+            }
         }
     }
 
@@ -126,7 +138,7 @@ public class Home
 
         if (playerHomes.TryGetValue(homeName, out string position))
         {
-            double[] coordinates = position.Split(',').Select(double.Parse).ToArray();
+            double[] coordinates = [.. position.Split(',').Select(double.Parse)];
 
             if (Configuration.homeCommandDelay == 0)
             {
@@ -245,6 +257,15 @@ public class Home
         foreach (KeyValuePair<string, string> keyValuePair in playerHomes)
         {
             homes += Environment.NewLine + keyValuePair.Key;
+            if (Configuration.ListHomeCommandShowCoords)
+            {
+                double[] coordinates = [.. keyValuePair.Value.Split(',').Select(double.Parse)];
+                coordinates[0] = coordinates[0] - serverAPI.World.DefaultSpawnPosition.X;
+                coordinates[1] = coordinates[1] - serverAPI.World.DefaultSpawnPosition.Y;
+                coordinates[2] = coordinates[2] - serverAPI.World.DefaultSpawnPosition.Z;
+
+                homes += $" : X:{coordinates[0]} Y:{coordinates[1]} Z{coordinates[2]}";
+            }
         }
 
         return TextCommandResult.Success(homes, "6");

@@ -2,6 +2,10 @@
 Add some commands for your server, highly configurable
 
 Features:
+- Translations
+- Commands syntax (or command translation)
+
+Commands:
 - sethome
 - home
 - delhome

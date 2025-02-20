@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Vintagestory.API.Common;
 
 namespace ServerEssentials;
@@ -82,17 +83,23 @@ public static class Configuration
 
     #region homes
     public static bool enableSetHomeCommand = true;
+    public static List<string> setHomeSyntaxes = ["sethome"];
     public static int maxHomes = 5;
     public static bool enableHomeCommand = true;
+    public static List<string> homeSyntaxes = ["home"];
     public static int homeCommandDelay = 5;
     public static int homeCooldown = 120;
     public static bool homeCommandCanMove = false;
     public static bool homeCommandCanReceiveDamage = false;
     public static bool enableDelHomeCommand = true;
+    public static List<string> delHomeSyntaxes = ["delhome"];
     public static bool enableListHomeCommand = true;
+    public static List<string> listHomeSyntaxes = ["listhome"];
+    public static bool ListHomeCommandShowCoords = true;
     #endregion
     #region tpa
     public static bool enableTpaCommand = true;
+    public static List<string> tpaSyntaxes = ["tpa"];
     public static int tpaCommandDelay = 5;
     public static int tpaCooldown = 120;
     public static int tpaTimeout = 10;
@@ -100,11 +107,15 @@ public static class Configuration
     public static bool tpaCommandCanReceiveDamage = false;
     public static bool tpaCommandResetCooldownOnCancellation = true;
     public static bool enableTpaAcceptCommand = true;
+    public static List<string> tpaAcceptSyntaxes = ["tpaaccept", "tpaccept", "tpaa"];
     public static bool enableTpaDenyCommand = true;
+    public static List<string> tpaDenySyntaxes = ["tpadeny", "tpad"];
     public static bool enableTpaCancelCommand = true;
+    public static List<string> tpaCancelSyntaxes = ["tpacancel", "tpac"];
     #endregion
     #region back
     public static bool enableBackCommand = true;
+    public static List<string> backSyntaxes = ["back"];
     public static int backCooldown = 120;
     public static int backCommandDelay = 5;
     public static int backCommandDuration = 30;
@@ -132,6 +143,13 @@ public static class Configuration
                 else enableSetHomeCommand = (bool)value;
             else Debug.Log("CONFIGURATION ERROR: enableSetHomeCommand not set");
         }
+        { //setHomeSyntaxes
+            if (baseConfigs.TryGetValue("setHomeSyntaxes", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: setHomeSyntaxes is null");
+                else if (value is not JArray) Debug.Log($"CONFIGURATION ERROR: setHomeSyntaxes is not array is {value.GetType()}");
+                else setHomeSyntaxes = (value as JArray).ToObject<List<string>>();
+            else Debug.Log("CONFIGURATION ERROR: setHomeSyntaxes not set");
+        }
         { //maxHomes
             if (baseConfigs.TryGetValue("maxHomes", out object value))
                 if (value is null) Debug.Log("CONFIGURATION ERROR: maxHomes is null");
@@ -145,6 +163,13 @@ public static class Configuration
                 else if (value is not bool) Debug.Log($"CONFIGURATION ERROR: enableHomeCommand is not boolean is {value.GetType()}");
                 else enableHomeCommand = (bool)value;
             else Debug.Log("CONFIGURATION ERROR: enableHomeCommand not set");
+        }
+        { //homeSyntaxes
+            if (baseConfigs.TryGetValue("homeSyntaxes", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: homeSyntaxes is null");
+                else if (value is not JArray) Debug.Log($"CONFIGURATION ERROR: homeSyntaxes is not array is {value.GetType()}");
+                else homeSyntaxes = (value as JArray).ToObject<List<string>>();
+            else Debug.Log("CONFIGURATION ERROR: homeSyntaxes not set");
         }
         { //homeCommandDelay
             if (baseConfigs.TryGetValue("homeCommandDelay", out object value))
@@ -181,6 +206,13 @@ public static class Configuration
                 else enableDelHomeCommand = (bool)value;
             else Debug.Log("CONFIGURATION ERROR: enableDelHomeCommand not set");
         }
+        { //delHomeSyntaxes
+            if (baseConfigs.TryGetValue("delHomeSyntaxes", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: delHomeSyntaxes is null");
+                else if (value is not JArray) Debug.Log($"CONFIGURATION ERROR: delHomeSyntaxes is not array is {value.GetType()}");
+                else delHomeSyntaxes = (value as JArray).ToObject<List<string>>();
+            else Debug.Log("CONFIGURATION ERROR: delHomeSyntaxes not set");
+        }
         { //enableListHomeCommand
             if (baseConfigs.TryGetValue("enableListHomeCommand", out object value))
                 if (value is null) Debug.Log("CONFIGURATION ERROR: enableListHomeCommand is null");
@@ -188,12 +220,33 @@ public static class Configuration
                 else enableListHomeCommand = (bool)value;
             else Debug.Log("CONFIGURATION ERROR: enableListHomeCommand not set");
         }
+        { //listHomeSyntaxes
+            if (baseConfigs.TryGetValue("listHomeSyntaxes", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: listHomeSyntaxes is null");
+                else if (value is not JArray) Debug.Log($"CONFIGURATION ERROR: listHomeSyntaxes is not array is {value.GetType()}");
+                else listHomeSyntaxes = (value as JArray).ToObject<List<string>>();
+            else Debug.Log("CONFIGURATION ERROR: listHomeSyntaxes not set");
+        }
+        { //ListHomeCommandShowCoords
+            if (baseConfigs.TryGetValue("ListHomeCommandShowCoords", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: ListHomeCommandShowCoords is null");
+                else if (value is not bool) Debug.Log($"CONFIGURATION ERROR: ListHomeCommandShowCoords is not boolean is {value.GetType()}");
+                else ListHomeCommandShowCoords = (bool)value;
+            else Debug.Log("CONFIGURATION ERROR: ListHomeCommandShowCoords not set");
+        }
         { //enableTpaCommand
             if (baseConfigs.TryGetValue("enableTpaCommand", out object value))
                 if (value is null) Debug.Log("CONFIGURATION ERROR: enableTpaCommand is null");
                 else if (value is not bool) Debug.Log($"CONFIGURATION ERROR: enableTpaCommand is not boolean is {value.GetType()}");
                 else enableTpaCommand = (bool)value;
             else Debug.Log("CONFIGURATION ERROR: enableTpaCommand not set");
+        }
+        { //tpaSyntaxes
+            if (baseConfigs.TryGetValue("tpaSyntaxes", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: tpaSyntaxes is null");
+                else if (value is not JArray) Debug.Log($"CONFIGURATION ERROR: tpaSyntaxes is not array is {value.GetType()}");
+                else tpaSyntaxes = (value as JArray).ToObject<List<string>>();
+            else Debug.Log("CONFIGURATION ERROR: tpaSyntaxes not set");
         }
         { //tpaCommandDelay
             if (baseConfigs.TryGetValue("tpaCommandDelay", out object value))
@@ -244,12 +297,26 @@ public static class Configuration
                 else enableTpaAcceptCommand = (bool)value;
             else Debug.Log("CONFIGURATION ERROR: enableTpaAcceptCommand not set");
         }
+        { //tpaAcceptSyntaxes
+            if (baseConfigs.TryGetValue("tpaAcceptSyntaxes", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: tpaAcceptSyntaxes is null");
+                else if (value is not JArray) Debug.Log($"CONFIGURATION ERROR: tpaAcceptSyntaxes is not array is {value.GetType()}");
+                else tpaAcceptSyntaxes = (value as JArray).ToObject<List<string>>();
+            else Debug.Log("CONFIGURATION ERROR: tpaAcceptSyntaxes not set");
+        }
         { //enableTpaDenyCommand
             if (baseConfigs.TryGetValue("enableTpaDenyCommand", out object value))
                 if (value is null) Debug.Log("CONFIGURATION ERROR: enableTpaDenyCommand is null");
                 else if (value is not bool) Debug.Log($"CONFIGURATION ERROR: enableTpaDenyCommand is not boolean is {value.GetType()}");
                 else enableTpaDenyCommand = (bool)value;
             else Debug.Log("CONFIGURATION ERROR: enableTpaDenyCommand not set");
+        }
+        { //tpaDenySyntaxes
+            if (baseConfigs.TryGetValue("tpaDenySyntaxes", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: tpaDenySyntaxes is null");
+                else if (value is not JArray) Debug.Log($"CONFIGURATION ERROR: tpaDenySyntaxes is not array is {value.GetType()}");
+                else tpaDenySyntaxes = (value as JArray).ToObject<List<string>>();
+            else Debug.Log("CONFIGURATION ERROR: tpaDenySyntaxes not set");
         }
         { //enableTpaCancelCommand
             if (baseConfigs.TryGetValue("enableTpaCancelCommand", out object value))
@@ -258,12 +325,26 @@ public static class Configuration
                 else enableTpaCancelCommand = (bool)value;
             else Debug.Log("CONFIGURATION ERROR: enableTpaCancelCommand not set");
         }
+        { //tpaCancelSyntaxes
+            if (baseConfigs.TryGetValue("tpaCancelSyntaxes", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: tpaCancelSyntaxes is null");
+                else if (value is not JArray) Debug.Log($"CONFIGURATION ERROR: tpaCancelSyntaxes is not array is {value.GetType()}");
+                else tpaCancelSyntaxes = (value as JArray).ToObject<List<string>>();
+            else Debug.Log("CONFIGURATION ERROR: tpaCancelSyntaxes not set");
+        }
         { //enableBackCommand
             if (baseConfigs.TryGetValue("enableBackCommand", out object value))
                 if (value is null) Debug.Log("CONFIGURATION ERROR: enableBackCommand is null");
                 else if (value is not bool) Debug.Log($"CONFIGURATION ERROR: enableBackCommand is not boolean is {value.GetType()}");
                 else enableBackCommand = (bool)value;
             else Debug.Log("CONFIGURATION ERROR: enableBackCommand not set");
+        }
+        { //backSyntaxes
+            if (baseConfigs.TryGetValue("backSyntaxes", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: backSyntaxes is null");
+                else if (value is not JArray) Debug.Log($"CONFIGURATION ERROR: backSyntaxes is not array is {value.GetType()}");
+                else backSyntaxes = (value as JArray).ToObject<List<string>>();
+            else Debug.Log("CONFIGURATION ERROR: backSyntaxes not set");
         }
         { //backCooldown
             if (baseConfigs.TryGetValue("backCooldown", out object value))
@@ -345,6 +426,7 @@ public static class Configuration
     public static string translationBackHealthInvalid = "Cannot teleport, your health is invalid";
     public static string translationBackTeleporting = "Teleporting to previously position...";
     public static string translationBackNoBackAvailable = "No previously position to go back!";
+    public static string translationBackDescription = "Returns to your previous position before teleporting using /back";
     #endregion
     #region home
     public static string translationHomeCancelledDueMoving = "Teleport canceled, because you moved";
@@ -359,6 +441,10 @@ public static class Configuration
     public static string translationHomeCooldown = "Home command is still on cooldown: {0} seconds remaining...";
     public static string translationHomeTeleporting = "Teleporting to {0}...";
     public static string translationHomeHealthInvalid = "Cannot teleport, your health is invalid";
+    public static string translationSetHomeDescription = "Set a home using /sethome homename";
+    public static string translationHomeDescription = "Teleport to a home using /home homename";
+    public static string translationDelHomeDescription = "Delete a home /delhome homename";
+    public static string translationListHomeDescription = "View the home lists";
     #endregion
     #region tpa
     public static string translationTpaCancelledDueMoving = "Teleport canceled, because you moved";
@@ -381,6 +467,10 @@ public static class Configuration
     public static string translationTpaRequestDenied = "Request denied: {0}";
     public static string translationTpaNoRequestToCancel = "No teleport to cancel";
     public static string translationTpaCancelled = "{0} teleport cancelled";
+    public static string translationTpaDescription = "Teleport to a player using /tpa playername";
+    public static string translationTpaAcceptDescription = "A requested player will teleport to you using /tpaaccept playername";
+    public static string translationTpaDenyDescription = "Deny a teleport request /tpadeny playername";
+    public static string translationTpaCancelDescription = "Cancel a channeling teleport request /tpacancel playername";
     #endregion
     public static void UpdateTranslationsConfigurations(ICoreAPI api)
     {
@@ -392,31 +482,325 @@ public static class Configuration
         );
         { //translationBackCancelledDueMoving
             if (baseConfigs.TryGetValue("translationBackCancelledDueMoving", out object value))
-                if (value is null) Debug.Log("CONFIGURATION ERROR: translationBackCancelledDueMoving is null");
-                else if (value is not string) Debug.Log($"CONFIGURATION ERROR: translationBackCancelledDueMoving is not string is {value.GetType()}");
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationBackCancelledDueMoving is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationBackCancelledDueMoving is not string is {value.GetType()}");
                 else translationBackCancelledDueMoving = (string)value;
-            else Debug.Log("CONFIGURATION ERROR: translationBackCancelledDueMoving not set");
+            else Debug.Log("TRANSLATION ERROR: translationBackCancelledDueMoving not set");
         }
         { //translationBackCancelledDueDamage
             if (baseConfigs.TryGetValue("translationBackCancelledDueDamage", out object value))
-                if (value is null) Debug.Log("CONFIGURATION ERROR: translationBackCancelledDueDamage is null");
-                else if (value is not string) Debug.Log($"CONFIGURATION ERROR: translationBackCancelledDueDamage is not string is {value.GetType()}");
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationBackCancelledDueDamage is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationBackCancelledDueDamage is not string is {value.GetType()}");
                 else translationBackCancelledDueDamage = (string)value;
-            else Debug.Log("CONFIGURATION ERROR: translationBackCancelledDueDamage not set");
+            else Debug.Log("TRANSLATION ERROR: translationBackCancelledDueDamage not set");
+        }
+        { //translationBackHealthInvalid
+            if (baseConfigs.TryGetValue("translationBackHealthInvalid", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationBackHealthInvalid is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationBackHealthInvalid is not string is {value.GetType()}");
+                else translationBackHealthInvalid = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationBackHealthInvalid not set");
+        }
+        { //translationBackTeleporting
+            if (baseConfigs.TryGetValue("translationBackTeleporting", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationBackTeleporting is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationBackTeleporting is not string is {value.GetType()}");
+                else translationBackTeleporting = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationBackTeleporting not set");
+        }
+        { //translationBackNoBackAvailable
+            if (baseConfigs.TryGetValue("translationBackNoBackAvailable", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationBackNoBackAvailable is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationBackNoBackAvailable is not string is {value.GetType()}");
+                else translationBackNoBackAvailable = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationBackNoBackAvailable not set");
+        }
+        { //translationBackDescription
+            if (baseConfigs.TryGetValue("translationBackDescription", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationBackDescription is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationBackDescription is not string is {value.GetType()}");
+                else translationBackDescription = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationBackDescription not set");
         }
         { //translationHomeCancelledDueMoving
             if (baseConfigs.TryGetValue("translationHomeCancelledDueMoving", out object value))
-                if (value is null) Debug.Log("CONFIGURATION ERROR: translationHomeCancelledDueMoving is null");
-                else if (value is not string) Debug.Log($"CONFIGURATION ERROR: translationHomeCancelledDueMoving is not string is {value.GetType()}");
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationHomeCancelledDueMoving is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationHomeCancelledDueMoving is not string is {value.GetType()}");
                 else translationHomeCancelledDueMoving = (string)value;
-            else Debug.Log("CONFIGURATION ERROR: translationHomeCancelledDueMoving not set");
+            else Debug.Log("TRANSLATION ERROR: translationHomeCancelledDueMoving not set");
         }
         { //translationHomeCancelledDueDamage
             if (baseConfigs.TryGetValue("translationHomeCancelledDueDamage", out object value))
-                if (value is null) Debug.Log("CONFIGURATION ERROR: translationHomeCancelledDueDamage is null");
-                else if (value is not string) Debug.Log($"CONFIGURATION ERROR: translationHomeCancelledDueDamage is not string is {value.GetType()}");
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationHomeCancelledDueDamage is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationHomeCancelledDueDamage is not string is {value.GetType()}");
                 else translationHomeCancelledDueDamage = (string)value;
-            else Debug.Log("CONFIGURATION ERROR: translationHomeCancelledDueDamage not set");
+            else Debug.Log("TRANSLATION ERROR: translationHomeCancelledDueDamage not set");
+        }
+        { //translationHomeMaxHomesReached
+            if (baseConfigs.TryGetValue("translationHomeMaxHomesReached", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationHomeMaxHomesReached is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationHomeMaxHomesReached is not string is {value.GetType()}");
+                else translationHomeMaxHomesReached = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationHomeMaxHomesReached not set");
+        }
+        { //translationHomeHomeSet
+            if (baseConfigs.TryGetValue("translationHomeHomeSet", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationHomeHomeSet is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationHomeHomeSet is not string is {value.GetType()}");
+                else translationHomeHomeSet = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationHomeHomeSet not set");
+        }
+        { //translationHomeHomeNotSet
+            if (baseConfigs.TryGetValue("translationHomeHomeNotSet", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationHomeHomeNotSet is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationHomeHomeNotSet is not string is {value.GetType()}");
+                else translationHomeHomeNotSet = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationHomeHomeNotSet not set");
+        }
+        { //translationHomeHomeRemoved
+            if (baseConfigs.TryGetValue("translationHomeHomeRemoved", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationHomeHomeRemoved is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationHomeHomeRemoved is not string is {value.GetType()}");
+                else translationHomeHomeRemoved = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationHomeHomeRemoved not set");
+        }
+        { //translationHomeHomeInvalid
+            if (baseConfigs.TryGetValue("translationHomeHomeInvalid", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationHomeHomeInvalid is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationHomeHomeInvalid is not string is {value.GetType()}");
+                else translationHomeHomeInvalid = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationHomeHomeInvalid not set");
+        }
+        { //translationHomeNoHomes
+            if (baseConfigs.TryGetValue("translationHomeNoHomes", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationHomeNoHomes is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationHomeNoHomes is not string is {value.GetType()}");
+                else translationHomeNoHomes = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationHomeNoHomes not set");
+        }
+        { //translationHomeHomesList
+            if (baseConfigs.TryGetValue("translationHomeHomesList", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationHomeHomesList is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationHomeHomesList is not string is {value.GetType()}");
+                else translationHomeHomesList = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationHomeHomesList not set");
+        }
+        { //translationHomeCooldown
+            if (baseConfigs.TryGetValue("translationHomeCooldown", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationHomeCooldown is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationHomeCooldown is not string is {value.GetType()}");
+                else translationHomeCooldown = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationHomeCooldown not set");
+        }
+        { //translationHomeTeleporting
+            if (baseConfigs.TryGetValue("translationHomeTeleporting", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationHomeTeleporting is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationHomeTeleporting is not string is {value.GetType()}");
+                else translationHomeTeleporting = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationHomeTeleporting not set");
+        }
+        { //translationHomeHealthInvalid
+            if (baseConfigs.TryGetValue("translationHomeHealthInvalid", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationHomeHealthInvalid is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationHomeHealthInvalid is not string is {value.GetType()}");
+                else translationHomeHealthInvalid = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationHomeHealthInvalid not set");
+        }
+        { //translationSetHomeDescription
+            if (baseConfigs.TryGetValue("translationSetHomeDescription", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationSetHomeDescription is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationSetHomeDescription is not string is {value.GetType()}");
+                else translationSetHomeDescription = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationSetHomeDescription not set");
+        }
+        { //translationHomeDescription
+            if (baseConfigs.TryGetValue("translationHomeDescription", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationHomeDescription is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationHomeDescription is not string is {value.GetType()}");
+                else translationHomeDescription = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationHomeDescription not set");
+        }
+        { //translationDelHomeDescription
+            if (baseConfigs.TryGetValue("translationDelHomeDescription", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationDelHomeDescription is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationDelHomeDescription is not string is {value.GetType()}");
+                else translationDelHomeDescription = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationDelHomeDescription not set");
+        }
+        { //translationListHomeDescription
+            if (baseConfigs.TryGetValue("translationListHomeDescription", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationListHomeDescription is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationListHomeDescription is not string is {value.GetType()}");
+                else translationListHomeDescription = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationListHomeDescription not set");
+        }
+        { //translationTpaCancelledDueMoving
+            if (baseConfigs.TryGetValue("translationTpaCancelledDueMoving", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationTpaCancelledDueMoving is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationTpaCancelledDueMoving is not string is {value.GetType()}");
+                else translationTpaCancelledDueMoving = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationTpaCancelledDueMoving not set");
+        }
+        { //translationTpaCancelledDueDamage
+            if (baseConfigs.TryGetValue("translationTpaCancelledDueDamage", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationTpaCancelledDueDamage is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationTpaCancelledDueDamage is not string is {value.GetType()}");
+                else translationTpaCancelledDueDamage = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationTpaCancelledDueDamage not set");
+        }
+        { //translationTpaOutRequestNotification
+            if (baseConfigs.TryGetValue("translationTpaOutRequestNotification", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationTpaOutRequestNotification is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationTpaOutRequestNotification is not string is {value.GetType()}");
+                else translationTpaOutRequestNotification = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationTpaOutRequestNotification not set");
+        }
+        { //translationTpaRequestExpired
+            if (baseConfigs.TryGetValue("translationTpaRequestExpired", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationTpaRequestExpired is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationTpaRequestExpired is not string is {value.GetType()}");
+                else translationTpaRequestExpired = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationTpaRequestExpired not set");
+        }
+        { //translationTpaRequestCancelled
+            if (baseConfigs.TryGetValue("translationTpaRequestCancelled", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationTpaRequestCancelled is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationTpaRequestCancelled is not string is {value.GetType()}");
+                else translationTpaRequestCancelled = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationTpaRequestCancelled not set");
+        }
+        { //translationTpaRequestAccepted
+            if (baseConfigs.TryGetValue("translationTpaRequestAccepted", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationTpaRequestAccepted is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationTpaRequestAccepted is not string is {value.GetType()}");
+                else translationTpaRequestAccepted = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationTpaRequestAccepted not set");
+        }
+        { //translationTpaCooldown
+            if (baseConfigs.TryGetValue("translationTpaCooldown", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationTpaCooldown is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationTpaCooldown is not string is {value.GetType()}");
+                else translationTpaCooldown = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationTpaCooldown not set");
+        }
+        { //translationTpaMissingPlayer
+            if (baseConfigs.TryGetValue("translationTpaMissingPlayer", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationTpaMissingPlayer is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationTpaMissingPlayer is not string is {value.GetType()}");
+                else translationTpaMissingPlayer = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationTpaMissingPlayer not set");
+        }
+        { //translationTpaNotFound
+            if (baseConfigs.TryGetValue("translationTpaNotFound", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationTpaNotFound is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationTpaNotFound is not string is {value.GetType()}");
+                else translationTpaNotFound = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationTpaNotFound not set");
+        }
+        { //translationTpaSent
+            if (baseConfigs.TryGetValue("translationTpaSent", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationTpaSent is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationTpaSent is not string is {value.GetType()}");
+                else translationTpaSent = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationTpaSent not set");
+        }
+        { //translationTpaReqiestNotFound
+            if (baseConfigs.TryGetValue("translationTpaReqiestNotFound", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationTpaReqiestNotFound is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationTpaReqiestNotFound is not string is {value.GetType()}");
+                else translationTpaReqiestNotFound = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationTpaReqiestNotFound not set");
+        }
+        { //translationTpaRequesterOnCooldown
+            if (baseConfigs.TryGetValue("translationTpaRequesterOnCooldown", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationTpaRequesterOnCooldown is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationTpaRequesterOnCooldown is not string is {value.GetType()}");
+                else translationTpaRequesterOnCooldown = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationTpaRequesterOnCooldown not set");
+        }
+        { //translationTpaRequesterHealthInvalid
+            if (baseConfigs.TryGetValue("translationTpaRequesterHealthInvalid", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationTpaRequesterHealthInvalid is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationTpaRequesterHealthInvalid is not string is {value.GetType()}");
+                else translationTpaRequesterHealthInvalid = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationTpaRequesterHealthInvalid not set");
+        }
+        { //translationTpaAlreadyChanneling
+            if (baseConfigs.TryGetValue("translationTpaAlreadyChanneling", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationTpaAlreadyChanneling is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationTpaAlreadyChanneling is not string is {value.GetType()}");
+                else translationTpaAlreadyChanneling = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationTpaAlreadyChanneling not set");
+        }
+        { //translationTpaAccepted
+            if (baseConfigs.TryGetValue("translationTpaAccepted", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationTpaAccepted is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationTpaAccepted is not string is {value.GetType()}");
+                else translationTpaAccepted = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationTpaAccepted not set");
+        }
+        { //translationTpaNoRequests
+            if (baseConfigs.TryGetValue("translationTpaNoRequests", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationTpaNoRequests is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationTpaNoRequests is not string is {value.GetType()}");
+                else translationTpaNoRequests = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationTpaNoRequests not set");
+        }
+        { //translationTpaRequestNotFound
+            if (baseConfigs.TryGetValue("translationTpaRequestNotFound", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationTpaRequestNotFound is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationTpaRequestNotFound is not string is {value.GetType()}");
+                else translationTpaRequestNotFound = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationTpaRequestNotFound not set");
+        }
+        { //translationTpaRequestDenied
+            if (baseConfigs.TryGetValue("translationTpaRequestDenied", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationTpaRequestDenied is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationTpaRequestDenied is not string is {value.GetType()}");
+                else translationTpaRequestDenied = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationTpaRequestDenied not set");
+        }
+        { //translationTpaNoRequestToCancel
+            if (baseConfigs.TryGetValue("translationTpaNoRequestToCancel", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationTpaNoRequestToCancel is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationTpaNoRequestToCancel is not string is {value.GetType()}");
+                else translationTpaNoRequestToCancel = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationTpaNoRequestToCancel not set");
+        }
+        { //translationTpaCancelled
+            if (baseConfigs.TryGetValue("translationTpaCancelled", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationTpaCancelled is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationTpaCancelled is not string is {value.GetType()}");
+                else translationTpaCancelled = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationTpaCancelled not set");
+        }
+        { //translationTpaDescription
+            if (baseConfigs.TryGetValue("translationTpaDescription", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationTpaDescription is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationTpaDescription is not string is {value.GetType()}");
+                else translationTpaDescription = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationTpaDescription not set");
+        }
+        { //translationTpaAcceptDescription
+            if (baseConfigs.TryGetValue("translationTpaAcceptDescription", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationTpaAcceptDescription is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationTpaAcceptDescription is not string is {value.GetType()}");
+                else translationTpaAcceptDescription = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationTpaAcceptDescription not set");
+        }
+        { //translationTpaDenyDescription
+            if (baseConfigs.TryGetValue("translationTpaDenyDescription", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationTpaDenyDescription is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationTpaDenyDescription is not string is {value.GetType()}");
+                else translationTpaDenyDescription = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationTpaDenyDescription not set");
+        }
+        { //translationTpaCancelDescription
+            if (baseConfigs.TryGetValue("translationTpaCancelDescription", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationTpaCancelDescription is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationTpaCancelDescription is not string is {value.GetType()}");
+                else translationTpaCancelDescription = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationTpaCancelDescription not set");
         }
     }
     #endregion

@@ -14,8 +14,6 @@ public class Initialization : ModSystem
     public override void StartServerSide(ICoreServerAPI api)
     {
         base.StartServerSide(api);
-        Debug.LoadLogger(api.Logger);
-
         Debug.Log($"Running on Version: {Mod.Info.Version}");
 
         homeCommands = new(api);
@@ -23,10 +21,18 @@ public class Initialization : ModSystem
         backCommands = new(api);
     }
 
+    public override void StartPre(ICoreAPI api)
+    {
+        base.StartPre(api);
+        Debug.LoadLogger(api.Logger);
+    }
+
     public override void AssetsLoaded(ICoreAPI api)
     {
         base.AssetsLoaded(api);
         Configuration.UpdateBaseConfigurations(api);
+        Configuration.UpdateTranslationsConfigurations(api);
+        Debug.Log("Configurations Loaded");
     }
 }
 
