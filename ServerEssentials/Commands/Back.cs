@@ -22,6 +22,11 @@ public class Back
     /// </summary>
     private readonly Dictionary<string, int> backCooldowns = [];
 
+    /// <summary>
+    /// [ PlayerUid,PlayerUid ]
+    /// </summary>
+    private readonly List<string> backDelays = [];
+
     internal static void InvokePlayerTeleported(IServerPlayer player, EntityPos pos)
     {
         long tickId = 0;
@@ -72,7 +77,7 @@ public class Back
                 // Description
                 .WithDescription(Configuration.translationBackDescription)
                 // Chat privilege
-                .RequiresPrivilege(Privilege.chat)
+                .RequiresPrivilege(Configuration.backPrivilege)
                 // Only if is a valid player
                 .RequiresPlayer()
                 // Function Handle
@@ -94,12 +99,13 @@ public class Back
         if (backCooldowns.TryGetValue(player.PlayerUID, out int secondsRemaining))
             return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationBackCooldown, secondsRemaining).ToString(), "7");
 
+        if (backDelays.Contains(player.PlayerUID))
+            return TextCommandResult.Success(Configuration.translationBackAlreadySent, "7");
+
         if (backData.TryGetValue(player.PlayerUID, out KeyValuePair<EntityPos, int> data))
         {
-            EntityPos playerLastPosition = player.Entity.Pos.Copy();
-            float playerLastHealth = player.Entity.GetBehavior<EntityBehaviorHealth>()?.Health ?? 0;
-            if (playerLastHealth <= 0 && !Configuration.backCommandCanReceiveDamage)
-                return TextCommandResult.Success(Configuration.translationBackHealthInvalid, "3");
+            EntityPos playerLastPosition;
+            float playerLastHealth;
 
             long tickId = 0;
             long tickCooldownId = 0;
@@ -136,6 +142,7 @@ public class Back
                     {
                         player.SendMessage(0, Configuration.translationBackCancelledDueMoving, EnumChatType.CommandError);
                         serverAPI.Event.UnregisterGameTickListener(tickId);
+                        backDelays.Remove(player.PlayerUID);
                         return;
                     }
                 }
@@ -147,6 +154,7 @@ public class Back
                     {
                         player.SendMessage(0, Configuration.translationBackCancelledDueDamage, EnumChatType.CommandError);
                         serverAPI.Event.UnregisterGameTickListener(tickId);
+                        backDelays.Remove(player.PlayerUID);
                         return;
                     }
 
@@ -163,6 +171,7 @@ public class Back
 
                     player.Entity.TeleportTo(data.Key);
                     serverAPI.Event.UnregisterGameTickListener(tickId);
+                    backDelays.Remove(player.PlayerUID);
 
                     if (Configuration.backCooldown > 0)
                     {
@@ -172,6 +181,29 @@ public class Back
                 }
             }
 
+            if (Configuration.backCommandDelay <= 0)
+            {
+                if (Configuration.enableBackResycle)
+                    InvokePlayerTeleported(player, player.Entity.Pos.Copy());
+                else
+                    backData.Remove(player.PlayerUID);
+
+                player.Entity.TeleportTo(data.Key);
+
+                if (Configuration.backCooldown > 0)
+                {
+                    backCooldowns[player.PlayerUID] = Configuration.backCooldown;
+                    tickCooldownId = serverAPI.Event.RegisterGameTickListener(OnBackCooldownTick, 1000, 0);
+                }
+                return TextCommandResult.Success(Configuration.translationBackTeleporting, "3");
+            }
+
+            playerLastPosition = player.Entity.Pos.Copy();
+            playerLastHealth = player.Entity.GetBehavior<EntityBehaviorHealth>()?.Health ?? 0;
+            if (playerLastHealth <= 0 && !Configuration.backCommandCanReceiveDamage)
+                return TextCommandResult.Success(Configuration.translationBackHealthInvalid, "3");
+
+            backDelays.Add(player.PlayerUID);
             tickId = serverAPI.Event.RegisterGameTickListener(OnBackTick, 1000, 1000);
 
             return TextCommandResult.Success(Configuration.translationBackTeleporting, "2");

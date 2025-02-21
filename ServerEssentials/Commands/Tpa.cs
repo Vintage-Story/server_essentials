@@ -40,7 +40,7 @@ public class TPA
                 // Description
                 .WithDescription(Configuration.translationTpaDescription)
                 // Chat privilege
-                .RequiresPrivilege(Privilege.chat)
+                .RequiresPrivilege(Configuration.tpaPrivilege)
                 // Only if is a valid player
                 .RequiresPlayer()
                 // Need a argument called home name or not
@@ -59,7 +59,7 @@ public class TPA
                 // Description
                 .WithDescription(Configuration.translationTpaAcceptDescription)
                 // Chat privilege
-                .RequiresPrivilege(Privilege.chat)
+                .RequiresPrivilege(Configuration.tpaAcceptPrivilege)
                 // Only if is a valid player
                 .RequiresPlayer()
                 // Need a argument called home name or not
@@ -78,7 +78,7 @@ public class TPA
                 // Description
                 .WithDescription(Configuration.translationTpaDenyDescription)
                 // Chat privilege
-                .RequiresPrivilege(Privilege.chat)
+                .RequiresPrivilege(Configuration.tpaDenyPrivilege)
                 // Only if is a valid player
                 .RequiresPlayer()
                 // Need a argument called home name or not
@@ -97,7 +97,7 @@ public class TPA
                 // Description
                 .WithDescription(Configuration.translationTpaCancelDescription)
                 // Chat privilege
-                .RequiresPrivilege(Privilege.chat)
+                .RequiresPrivilege(Configuration.tpaCancelPrivilege)
                 // Only if is a valid player
                 .RequiresPlayer()
                 // Need a argument called home name or not
@@ -209,21 +209,11 @@ public class TPA
             if (playerTeleporting is null)
                 return TextCommandResult.Success(Configuration.translationTpaRequestNotFound, "12");
 
+            EntityPos playerLastPosition;
+            float playerLastHealth;
+
             if (tpaCooldowns.TryGetValue(playerTeleporting.PlayerUID, out _))
                 return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationTpaRequesterOnCooldown, playerTeleporting.PlayerName).ToString(), "7");
-
-            EntityPos playerLastPosition = playerTeleporting.Entity.Pos.Copy();
-            float playerLastHealth = playerTeleporting.Entity.GetBehavior<EntityBehaviorHealth>()?.Health ?? 0;
-            if (playerLastHealth <= 0 && !Configuration.tpaCommandCanReceiveDamage)
-                return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationTpaRequesterHealthInvalid, playerTeleporting.PlayerName).ToString(), "3");
-
-            if (tpaDelays.TryGetValue(player.PlayerUID, out _))
-                if (!tpaDelays[player.PlayerUID].Contains(playerTeleporting.PlayerUID))
-                    tpaDelays[player.PlayerUID].Add(playerTeleporting.PlayerUID);
-                else
-                    return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationTpaAlreadyChanneling, playerTeleporting.PlayerName).ToString(), "14");
-            else
-                tpaDelays[player.PlayerUID] = [playerTeleporting.PlayerUID];
 
             long tickId = 0;
             long tickCooldownId = 0;
@@ -350,12 +340,43 @@ public class TPA
                     playerTeleporting.Entity.TeleportTo(player.Entity.Pos);
                     serverAPI.Event.UnregisterGameTickListener(tickId);
 
-                    if (Configuration.tpaCooldown > 0) {
+                    if (Configuration.tpaCooldown > 0)
+                    {
                         tpaCooldowns[playerTeleporting.PlayerUID] = Configuration.tpaCooldown;
                         tickCooldownId = serverAPI.Event.RegisterGameTickListener(OnTpaCooldownTick, 1000, 0);
                     }
                 }
             }
+
+            if (Configuration.tpaCommandDelay <= 0)
+            {
+                if (Configuration.enableBackForTpa)
+                    Back.InvokePlayerTeleported(playerTeleporting as IServerPlayer, playerTeleporting.Entity.Pos.Copy());
+
+                playerTeleporting.Entity.TeleportTo(player.Entity.Pos);
+
+                if (Configuration.tpaCooldown > 0)
+                {
+                    tpaCooldowns[playerTeleporting.PlayerUID] = Configuration.tpaCooldown;
+                    tickCooldownId = serverAPI.Event.RegisterGameTickListener(OnTpaCooldownTick, 1000, 0);
+                }
+
+                return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationTpaAccepted, playerTeleporting.PlayerName).ToString(), "13");
+            }
+
+            if (tpaDelays.TryGetValue(player.PlayerUID, out _))
+                if (!tpaDelays[player.PlayerUID].Contains(playerTeleporting.PlayerUID))
+                    tpaDelays[player.PlayerUID].Add(playerTeleporting.PlayerUID);
+                else
+                    return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationTpaAlreadyChanneling, playerTeleporting.PlayerName).ToString(), "14");
+            else
+                tpaDelays[player.PlayerUID] = [playerTeleporting.PlayerUID];
+
+            playerLastPosition = playerTeleporting.Entity.Pos.Copy();
+            playerLastHealth = playerTeleporting.Entity.GetBehavior<EntityBehaviorHealth>()?.Health ?? 0;
+            if (playerLastHealth <= 0 && !Configuration.tpaCommandCanReceiveDamage)
+                return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationTpaRequesterHealthInvalid, playerTeleporting.PlayerName).ToString(), "3");
+
             tickId = serverAPI.Event.RegisterGameTickListener(OnTpaAcceptTick, 1000, 0);
 
             tpaRequests[player.PlayerUID].Remove(playerTeleporting.PlayerUID);

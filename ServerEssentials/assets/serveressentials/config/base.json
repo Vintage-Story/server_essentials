@@ -1,20 +1,25 @@
 {
     "enableSetHomeCommand": true,
+    "setHomePrivilege": "chat",
     "setHomeSyntaxes": ["sethome"],
     "maxHomes": 5,
     "enableHomeCommand": true,
+    "homePrivilege": "chat",
     "homeSyntaxes": ["home"],
     "homeCommandDelay": 5,
     "homeCooldown": 120,
     "homeCommandCanMove": false,
     "homeCommandCanReceiveDamage": false,
     "enableDelHomeCommand": true,
+    "delHomePrivilege": "chat",
     "delHomeSyntaxes": ["delhome"],
     "enableListHomeCommand": true,
+    "listHomePrivilege": "chat",
     "listHomeSyntaxes": ["listhome"],
     "ListHomeCommandShowCoords": true,
 
     "enableTpaCommand": true,
+    "tpaPrivilege": "chat",
     "tpaSyntaxes": ["tpa"],
     "tpaCommandDelay": 5,
     "tpaCooldown": 120,
@@ -23,13 +28,17 @@
     "tpaCommandCanReceiveDamage": false,
     "tpaCommandResetCooldownOnCancellation": true,
     "enableTpaAcceptCommand": true,
+    "tpaAcceptPrivilege": "chat",
     "tpaAcceptSyntaxes": ["tpaaccept", "tpaccept", "tpaa"],
     "enableTpaDenyCommand": true,
+    "tpaDenyPrivilege": "chat",
     "tpaDenySyntaxes": ["tpadeny", "tpad"],
     "enableTpaCancelCommand": true,
+    "tpaCancelPrivilege": "chat",
     "tpaCancelSyntaxes": ["tpacancel", "tpac"],
 
     "enableBackCommand": true,
+    "backPrivilege": "chat",
     "backSyntaxes": ["back"],
     "backCooldown": 120,
     "backCommandDelay": 5,
@@ -41,5 +50,5 @@
     "enableBackForDeath": true,
     "enableBackResycle": false,
     
-    "enableExtendedLogs": true
+    "enableExtendedLogs": false
 }

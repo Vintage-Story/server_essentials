@@ -20,6 +20,11 @@ public class Home
     /// </summary>
     private readonly Dictionary<string, int> homeCooldowns = [];
 
+    /// <summary>
+    /// [ PlayerUid,PlayerUid ]
+    /// </summary>
+    private readonly List<string> homeDelays = [];
+
     public Home(ICoreServerAPI api)
     {
         serverAPI = api;
@@ -33,7 +38,7 @@ public class Home
                 // Description
                 .WithDescription(Configuration.translationHomeDescription)
                 // Chat privilege
-                .RequiresPrivilege(Privilege.chat)
+                .RequiresPrivilege(Configuration.setHomePrivilege)
                 // Only if is a valid player
                 .RequiresPlayer()
                 // Need a argument called home name or not
@@ -53,7 +58,7 @@ public class Home
                 // Description
                 .WithDescription(Configuration.translationHomeDescription)
                 // Chat privilege
-                .RequiresPrivilege(Privilege.chat)
+                .RequiresPrivilege(Configuration.homePrivilege)
                 // Only if is a valid player
                 .RequiresPlayer()
                 // Need a argument called home name or not
@@ -72,7 +77,7 @@ public class Home
                 // Description
                 .WithDescription(Configuration.translationDelHomeDescription)
                 // Chat privilege
-                .RequiresPrivilege(Privilege.chat)
+                .RequiresPrivilege(Configuration.delHomePrivilege)
                 // Only if is a valid player
                 .RequiresPlayer()
                 // Need a argument called home name or not
@@ -91,7 +96,7 @@ public class Home
                 // Description
                 .WithDescription(Configuration.translationListHomeDescription)
                 // Chat privilege
-                .RequiresPrivilege(Privilege.chat)
+                .RequiresPrivilege(Configuration.listHomePrivilege)
                 // Only if is a valid player
                 .RequiresPlayer()
                 // Function Handle
@@ -129,6 +134,9 @@ public class Home
         if (homeCooldowns.TryGetValue(player.PlayerUID, out int secondsRemaing))
             return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationHomeCooldown, secondsRemaing).ToString(), "7");
 
+        if (homeDelays.Contains(player.PlayerUID))
+            return TextCommandResult.Success(Configuration.translationHomeAlreadySent, "7");
+
         byte[] data = serverAPI.WorldManager.SaveGame.GetData($"ServerEssentials_homes_{player.PlayerUID}");
         Dictionary<string, string> playerHomes = data == null ? [] : SerializerUtil.Deserialize<Dictionary<string, string>>(data);
 
@@ -140,18 +148,8 @@ public class Home
         {
             double[] coordinates = [.. position.Split(',').Select(double.Parse)];
 
-            if (Configuration.homeCommandDelay == 0)
-            {
-                if (Configuration.enableBackForHome)
-                    Back.InvokePlayerTeleported(player, player.Entity.Pos.Copy());
-                player.Entity.TeleportTo(new Vec3d(coordinates[0], coordinates[1], coordinates[2]));
-                return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationHomeTeleporting, homeName).ToString(), "2");
-            }
-
-            EntityPos playerLastPosition = player.Entity.Pos.Copy();
-            float playerLastHealth = player.Entity.GetBehavior<EntityBehaviorHealth>()?.Health ?? 0;
-            if (playerLastHealth <= 0 && !Configuration.homeCommandCanReceiveDamage)
-                return TextCommandResult.Success(Configuration.translationHomeHealthInvalid, "3");
+            EntityPos playerLastPosition;
+            float playerLastHealth;
 
             long tickId = 0;
             long tickCooldownId = 0;
@@ -188,6 +186,7 @@ public class Home
                     {
                         player.SendMessage(0, Configuration.translationHomeCancelledDueMoving, EnumChatType.CommandError);
                         serverAPI.Event.UnregisterGameTickListener(tickId);
+                        homeDelays.Remove(player.PlayerUID);
                         return;
                     }
                 }
@@ -199,6 +198,7 @@ public class Home
                     {
                         player.SendMessage(0, Configuration.translationHomeCancelledDueDamage, EnumChatType.CommandError);
                         serverAPI.Event.UnregisterGameTickListener(tickId);
+                        homeDelays.Remove(player.PlayerUID);
                         return;
                     }
 
@@ -212,6 +212,7 @@ public class Home
                         Back.InvokePlayerTeleported(player, player.Entity.Pos.Copy());
                     player.Entity.TeleportTo(new Vec3d(coordinates[0], coordinates[1], coordinates[2]));
                     serverAPI.Event.UnregisterGameTickListener(tickId);
+                    homeDelays.Remove(player.PlayerUID);
                     if (Configuration.homeCooldown > 0)
                     {
                         homeCooldowns[player.PlayerUID] = Configuration.homeCooldown;
@@ -220,6 +221,28 @@ public class Home
                 }
             }
 
+            if (Configuration.homeCommandDelay <= 0)
+            {
+                if (Configuration.enableBackForHome)
+                    Back.InvokePlayerTeleported(player, player.Entity.Pos.Copy());
+
+                player.Entity.TeleportTo(new Vec3d(coordinates[0], coordinates[1], coordinates[2]));
+
+                if (Configuration.homeCooldown > 0)
+                {
+                    homeCooldowns[player.PlayerUID] = Configuration.homeCooldown;
+                    tickCooldownId = serverAPI.Event.RegisterGameTickListener(OnHomeCooldownTick, 1000, 0);
+                }
+
+                return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationHomeTeleporting, homeName).ToString(), "2");
+            }
+
+            playerLastPosition = player.Entity.Pos.Copy();
+            playerLastHealth = player.Entity.GetBehavior<EntityBehaviorHealth>()?.Health ?? 0;
+            if (playerLastHealth <= 0 && !Configuration.homeCommandCanReceiveDamage)
+                return TextCommandResult.Success(Configuration.translationHomeHealthInvalid, "3");
+
+            homeDelays.Add(player.PlayerUID);
             tickId = serverAPI.Event.RegisterGameTickListener(OnHomeTick, 1000, 1000);
 
             return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationHomeTeleporting, homeName).ToString(), "2");

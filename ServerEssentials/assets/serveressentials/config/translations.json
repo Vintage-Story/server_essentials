@@ -6,6 +6,7 @@
     "translationBackNoBackAvailable": "No previously position to go back!",
     "translationBackCooldown": "Back command is still on cooldown: {0} seconds remaining...",
     "translationBackDescription": "Returns to your previous position before teleporting using /back",
+    "translationBackAlreadySent": "Already Sent",
 
     "translationHomeCancelledDueMoving": "Teleport canceled, because you moved",
     "translationHomeCancelledDueDamage": "Teleport canceled, because you received damage",
@@ -23,6 +24,7 @@
     "translationHomeDescription": "Teleport to a home using /home homename",
     "translationDelHomeDescription": "Delete a home /delhome homename",
     "translationListHomeDescription": "List the homes you have set",
+    "translationHomeAlreadySent": "Already Sent",
     
     "translationTpaCancelledDueMoving": "Teleport canceled, because you moved",
     "translationTpaCancelledDueDamage": "Teleport canceled, because you received damage",

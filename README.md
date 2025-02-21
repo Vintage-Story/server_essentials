@@ -1,6 +1,8 @@
 # Server Essentials
 Add some commands for your server, highly configurable
 
+You can check the possibilities with the mod in the [wiki](https://github.com/LeandroTheDev/server_essentials/wiki)
+
 Features:
 - Translations
 - Commands syntax (or command translation)

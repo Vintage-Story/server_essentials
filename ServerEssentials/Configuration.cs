@@ -83,22 +83,27 @@ public static class Configuration
 
     #region homes
     public static bool enableSetHomeCommand = true;
+    public static string setHomePrivilege = "chat";
     public static List<string> setHomeSyntaxes = ["sethome"];
     public static int maxHomes = 5;
     public static bool enableHomeCommand = true;
+    public static string homePrivilege = "chat";
     public static List<string> homeSyntaxes = ["home"];
     public static int homeCommandDelay = 5;
     public static int homeCooldown = 120;
     public static bool homeCommandCanMove = false;
     public static bool homeCommandCanReceiveDamage = false;
     public static bool enableDelHomeCommand = true;
+    public static string delHomePrivilege = "chat";
     public static List<string> delHomeSyntaxes = ["delhome"];
     public static bool enableListHomeCommand = true;
+    public static string listHomePrivilege = "chat";
     public static List<string> listHomeSyntaxes = ["listhome"];
     public static bool ListHomeCommandShowCoords = true;
     #endregion
     #region tpa
     public static bool enableTpaCommand = true;
+    public static string tpaPrivilege = "chat";
     public static List<string> tpaSyntaxes = ["tpa"];
     public static int tpaCommandDelay = 5;
     public static int tpaCooldown = 120;
@@ -107,14 +112,18 @@ public static class Configuration
     public static bool tpaCommandCanReceiveDamage = false;
     public static bool tpaCommandResetCooldownOnCancellation = true;
     public static bool enableTpaAcceptCommand = true;
+    public static string tpaAcceptPrivilege = "chat";
     public static List<string> tpaAcceptSyntaxes = ["tpaaccept", "tpaccept", "tpaa"];
     public static bool enableTpaDenyCommand = true;
+    public static string tpaDenyPrivilege = "chat";
     public static List<string> tpaDenySyntaxes = ["tpadeny", "tpad"];
     public static bool enableTpaCancelCommand = true;
+    public static string tpaCancelPrivilege = "chat";
     public static List<string> tpaCancelSyntaxes = ["tpacancel", "tpac"];
     #endregion
     #region back
     public static bool enableBackCommand = true;
+    public static string backPrivilege = "chat";
     public static List<string> backSyntaxes = ["back"];
     public static int backCooldown = 120;
     public static int backCommandDelay = 5;
@@ -143,6 +152,13 @@ public static class Configuration
                 else enableSetHomeCommand = (bool)value;
             else Debug.Log("CONFIGURATION ERROR: enableSetHomeCommand not set");
         }
+        { //setHomePrivilege
+            if (baseConfigs.TryGetValue("setHomePrivilege", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: setHomePrivilege is null");
+                else if (value is not string) Debug.Log($"CONFIGURATION ERROR: setHomePrivilege is not string is {value.GetType()}");
+                else setHomePrivilege = (string)value;
+            else Debug.Log("CONFIGURATION ERROR: setHomePrivilege not set");
+        }
         { //setHomeSyntaxes
             if (baseConfigs.TryGetValue("setHomeSyntaxes", out object value))
                 if (value is null) Debug.Log("CONFIGURATION ERROR: setHomeSyntaxes is null");
@@ -163,6 +179,13 @@ public static class Configuration
                 else if (value is not bool) Debug.Log($"CONFIGURATION ERROR: enableHomeCommand is not boolean is {value.GetType()}");
                 else enableHomeCommand = (bool)value;
             else Debug.Log("CONFIGURATION ERROR: enableHomeCommand not set");
+        }
+        { //homePrivilege
+            if (baseConfigs.TryGetValue("homePrivilege", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: homePrivilege is null");
+                else if (value is not string) Debug.Log($"CONFIGURATION ERROR: homePrivilege is not string is {value.GetType()}");
+                else homePrivilege = (string)value;
+            else Debug.Log("CONFIGURATION ERROR: homePrivilege not set");
         }
         { //homeSyntaxes
             if (baseConfigs.TryGetValue("homeSyntaxes", out object value))
@@ -206,6 +229,13 @@ public static class Configuration
                 else enableDelHomeCommand = (bool)value;
             else Debug.Log("CONFIGURATION ERROR: enableDelHomeCommand not set");
         }
+        { //delHomePrivilege
+            if (baseConfigs.TryGetValue("delHomePrivilege", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: delHomePrivilege is null");
+                else if (value is not string) Debug.Log($"CONFIGURATION ERROR: delHomePrivilege is not string is {value.GetType()}");
+                else delHomePrivilege = (string)value;
+            else Debug.Log("CONFIGURATION ERROR: delHomePrivilege not set");
+        }
         { //delHomeSyntaxes
             if (baseConfigs.TryGetValue("delHomeSyntaxes", out object value))
                 if (value is null) Debug.Log("CONFIGURATION ERROR: delHomeSyntaxes is null");
@@ -219,6 +249,13 @@ public static class Configuration
                 else if (value is not bool) Debug.Log($"CONFIGURATION ERROR: enableListHomeCommand is not boolean is {value.GetType()}");
                 else enableListHomeCommand = (bool)value;
             else Debug.Log("CONFIGURATION ERROR: enableListHomeCommand not set");
+        }
+        { //listHomePrivilege
+            if (baseConfigs.TryGetValue("listHomePrivilege", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: listHomePrivilege is null");
+                else if (value is not string) Debug.Log($"CONFIGURATION ERROR: listHomePrivilege is not string is {value.GetType()}");
+                else listHomePrivilege = (string)value;
+            else Debug.Log("CONFIGURATION ERROR: listHomePrivilege not set");
         }
         { //listHomeSyntaxes
             if (baseConfigs.TryGetValue("listHomeSyntaxes", out object value))
@@ -240,6 +277,13 @@ public static class Configuration
                 else if (value is not bool) Debug.Log($"CONFIGURATION ERROR: enableTpaCommand is not boolean is {value.GetType()}");
                 else enableTpaCommand = (bool)value;
             else Debug.Log("CONFIGURATION ERROR: enableTpaCommand not set");
+        }
+        { //tpaPrivilege
+            if (baseConfigs.TryGetValue("tpaPrivilege", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: tpaPrivilege is null");
+                else if (value is not string) Debug.Log($"CONFIGURATION ERROR: tpaPrivilege is not string is {value.GetType()}");
+                else tpaPrivilege = (string)value;
+            else Debug.Log("CONFIGURATION ERROR: tpaPrivilege not set");
         }
         { //tpaSyntaxes
             if (baseConfigs.TryGetValue("tpaSyntaxes", out object value))
@@ -297,6 +341,13 @@ public static class Configuration
                 else enableTpaAcceptCommand = (bool)value;
             else Debug.Log("CONFIGURATION ERROR: enableTpaAcceptCommand not set");
         }
+        { //tpaAcceptPrivilege
+            if (baseConfigs.TryGetValue("tpaAcceptPrivilege", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: tpaAcceptPrivilege is null");
+                else if (value is not string) Debug.Log($"CONFIGURATION ERROR: tpaAcceptPrivilege is not string is {value.GetType()}");
+                else tpaAcceptPrivilege = (string)value;
+            else Debug.Log("CONFIGURATION ERROR: tpaAcceptPrivilege not set");
+        }
         { //tpaAcceptSyntaxes
             if (baseConfigs.TryGetValue("tpaAcceptSyntaxes", out object value))
                 if (value is null) Debug.Log("CONFIGURATION ERROR: tpaAcceptSyntaxes is null");
@@ -310,6 +361,13 @@ public static class Configuration
                 else if (value is not bool) Debug.Log($"CONFIGURATION ERROR: enableTpaDenyCommand is not boolean is {value.GetType()}");
                 else enableTpaDenyCommand = (bool)value;
             else Debug.Log("CONFIGURATION ERROR: enableTpaDenyCommand not set");
+        }
+        { //tpaDenyPrivilege
+            if (baseConfigs.TryGetValue("tpaDenyPrivilege", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: tpaDenyPrivilege is null");
+                else if (value is not string) Debug.Log($"CONFIGURATION ERROR: tpaDenyPrivilege is not string is {value.GetType()}");
+                else tpaDenyPrivilege = (string)value;
+            else Debug.Log("CONFIGURATION ERROR: tpaDenyPrivilege not set");
         }
         { //tpaDenySyntaxes
             if (baseConfigs.TryGetValue("tpaDenySyntaxes", out object value))
@@ -325,6 +383,13 @@ public static class Configuration
                 else enableTpaCancelCommand = (bool)value;
             else Debug.Log("CONFIGURATION ERROR: enableTpaCancelCommand not set");
         }
+        { //tpaCancelPrivilege
+            if (baseConfigs.TryGetValue("tpaCancelPrivilege", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: tpaCancelPrivilege is null");
+                else if (value is not string) Debug.Log($"CONFIGURATION ERROR: tpaCancelPrivilege is not string is {value.GetType()}");
+                else tpaCancelPrivilege = (string)value;
+            else Debug.Log("CONFIGURATION ERROR: tpaCancelPrivilege not set");
+        }
         { //tpaCancelSyntaxes
             if (baseConfigs.TryGetValue("tpaCancelSyntaxes", out object value))
                 if (value is null) Debug.Log("CONFIGURATION ERROR: tpaCancelSyntaxes is null");
@@ -338,6 +403,13 @@ public static class Configuration
                 else if (value is not bool) Debug.Log($"CONFIGURATION ERROR: enableBackCommand is not boolean is {value.GetType()}");
                 else enableBackCommand = (bool)value;
             else Debug.Log("CONFIGURATION ERROR: enableBackCommand not set");
+        }
+        { //backPrivilege
+            if (baseConfigs.TryGetValue("backPrivilege", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: backPrivilege is null");
+                else if (value is not string) Debug.Log($"CONFIGURATION ERROR: backPrivilege is not string is {value.GetType()}");
+                else backPrivilege = (string)value;
+            else Debug.Log("CONFIGURATION ERROR: backPrivilege not set");
         }
         { //backSyntaxes
             if (baseConfigs.TryGetValue("backSyntaxes", out object value))
@@ -428,6 +500,7 @@ public static class Configuration
     public static string translationBackNoBackAvailable = "No previously position to go back!";
     public static string translationBackCooldown = "Back command is still on cooldown: {0} seconds remaining...";
     public static string translationBackDescription = "Returns to your previous position before teleporting using /back";
+    public static string translationBackAlreadySent = "Already Sent";
     #endregion
     #region home
     public static string translationHomeCancelledDueMoving = "Teleport canceled, because you moved";
@@ -446,6 +519,7 @@ public static class Configuration
     public static string translationHomeDescription = "Teleport to a home using /home homename";
     public static string translationDelHomeDescription = "Delete a home /delhome homename";
     public static string translationListHomeDescription = "View the home lists";
+    public static string translationHomeAlreadySent = "Already Sent";
     #endregion
     #region tpa
     public static string translationTpaCancelledDueMoving = "Teleport canceled, because you moved";
@@ -529,6 +603,13 @@ public static class Configuration
                 else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationBackDescription is not string is {value.GetType()}");
                 else translationBackDescription = (string)value;
             else Debug.Log("TRANSLATION ERROR: translationBackDescription not set");
+        }
+        { //translationBackAlreadySent
+            if (baseConfigs.TryGetValue("translationBackAlreadySent", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationBackAlreadySent is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationBackAlreadySent is not string is {value.GetType()}");
+                else translationBackAlreadySent = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationBackAlreadySent not set");
         }
         { //translationHomeCancelledDueMoving
             if (baseConfigs.TryGetValue("translationHomeCancelledDueMoving", out object value))
@@ -641,6 +722,13 @@ public static class Configuration
                 else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationListHomeDescription is not string is {value.GetType()}");
                 else translationListHomeDescription = (string)value;
             else Debug.Log("TRANSLATION ERROR: translationListHomeDescription not set");
+        }
+        { //translationHomeAlreadySent
+            if (baseConfigs.TryGetValue("translationHomeAlreadySent", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationHomeAlreadySent is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationHomeAlreadySent is not string is {value.GetType()}");
+                else translationHomeAlreadySent = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationHomeAlreadySent not set");
         }
         { //translationTpaCancelledDueMoving
             if (baseConfigs.TryGetValue("translationTpaCancelledDueMoving", out object value))
