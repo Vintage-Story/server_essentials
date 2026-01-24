@@ -174,11 +174,8 @@ public class Home
                 EntityPos playerActualPosition = player.Entity.Pos.Copy();
                 float playerActualHealth = player.Entity.GetBehavior<EntityBehaviorHealth>()?.Health ?? 0;
 
-                if (Configuration.enableExtendedLogs)
-                {
-                    Debug.Log($"{player.PlayerName}: POS: {playerLastPosition.XYZ},{playerActualPosition.XYZ}");
-                    Debug.Log($"{player.PlayerName}: Health: {playerLastHealth},{playerActualHealth}");
-                }
+                Debug.LogDebug($"{player.PlayerName}: POS: {playerLastPosition.XYZ},{playerActualPosition.XYZ}");
+                Debug.LogDebug($"{player.PlayerName}: Health: {playerLastHealth},{playerActualHealth}");
 
                 if (!Configuration.homeCommandCanMove)
                 {
@@ -193,8 +190,7 @@ public class Home
 
                 if (!Configuration.homeCommandCanReceiveDamage)
                 {
-                    // This is necessary because the health system keep changing between server ticks for some fucking reason
-                    if (Math.Abs(playerLastHealth - playerActualHealth) > 0.1)
+                    if (playerActualHealth < playerLastHealth && (playerLastHealth - playerActualHealth) > 0.1f)
                     {
                         player.SendMessage(0, Configuration.translationHomeCancelledDueDamage, EnumChatType.CommandError);
                         serverAPI.Event.UnregisterGameTickListener(tickId);

@@ -269,8 +269,7 @@ public class TPA
                         (playerTeleporting as IServerPlayer).SendMessage(0, new StringBuilder().AppendFormat(Configuration.translationTpaRequestCancelled, player.PlayerName).ToString(), EnumChatType.CommandError);
                         serverAPI.Event.UnregisterGameTickListener(tickId);
 
-                        if (Configuration.enableExtendedLogs)
-                            Debug.Log($"{playerTeleporting.PlayerName} canceled due to not on tpaDelays");
+                        Debug.LogDebug($"{playerTeleporting.PlayerName} canceled due to not on tpaDelays");
                         return;
                     }
                 }
@@ -281,19 +280,15 @@ public class TPA
                     (playerTeleporting as IServerPlayer).SendMessage(0, new StringBuilder().AppendFormat(Configuration.translationTpaRequestCancelled, player.PlayerName).ToString(), EnumChatType.CommandError);
                     serverAPI.Event.UnregisterGameTickListener(tickId);
 
-                    if (Configuration.enableExtendedLogs)
-                        Debug.Log($"{playerTeleporting.PlayerName} canceled due to {player.PlayerName} missing tpaDelays");
+                    Debug.LogDebug($"{playerTeleporting.PlayerName} canceled due to {player.PlayerName} missing tpaDelays");
                     return;
                 }
 
                 EntityPos playerActualPosition = playerTeleporting.Entity.Pos.Copy();
                 float playerActualHealth = playerTeleporting.Entity.GetBehavior<EntityBehaviorHealth>()?.Health ?? 0;
 
-                if (Configuration.enableExtendedLogs)
-                {
-                    Debug.Log($"{playerTeleporting.PlayerName}: POS: {playerLastPosition.XYZ},{playerActualPosition.XYZ}");
-                    Debug.Log($"{playerTeleporting.PlayerName}: Health: {playerLastHealth},{playerActualHealth}");
-                }
+                Debug.LogDebug($"{playerTeleporting.PlayerName}: POS: {playerLastPosition.XYZ},{playerActualPosition.XYZ}");
+                Debug.LogDebug($"{playerTeleporting.PlayerName}: Health: {playerLastHealth},{playerActualHealth}");
 
                 if (!Configuration.tpaCommandCanMove)
                 {
@@ -303,24 +298,21 @@ public class TPA
                         (playerTeleporting as IServerPlayer).SendMessage(0, Configuration.translationTpaCancelledDueMoving, EnumChatType.CommandError);
                         serverAPI.Event.UnregisterGameTickListener(tickId);
 
-                        if (Configuration.enableExtendedLogs)
-                            Debug.Log($"{playerTeleporting.PlayerName} moved during tpa: {playerActualPosition.XYZ} : {playerLastPosition.XYZ}");
+                        Debug.LogDebug($"{playerTeleporting.PlayerName} moved during tpa: {playerActualPosition.XYZ} : {playerLastPosition.XYZ}");
                         return;
                     }
                 }
 
                 if (!Configuration.tpaCommandCanReceiveDamage)
                 {
-                    // This is necessary because the health system keep changing between server ticks for some fucking reason
-                    if (Math.Abs(playerLastHealth - playerActualHealth) > 0.1)
+                    if (playerActualHealth < playerLastHealth && (playerLastHealth - playerActualHealth) > 0.1f)
                     {
                         RemoveDelay();
                         ResetCooldown();
                         (playerTeleporting as IServerPlayer).SendMessage(0, Configuration.translationTpaCancelledDueDamage, EnumChatType.CommandError);
                         serverAPI.Event.UnregisterGameTickListener(tickId);
 
-                        if (Configuration.enableExtendedLogs)
-                            Debug.Log($"{playerTeleporting.PlayerName} received damage during tpa: {playerActualHealth} : {playerLastHealth}");
+                        Debug.LogDebug($"{playerTeleporting.PlayerName} received damage during tpa: {playerActualHealth} : {playerLastHealth}");
                         return;
                     }
 

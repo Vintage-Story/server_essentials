@@ -38,9 +38,24 @@ public class Initialization : ModSystem
 
 public class Debug
 {
-    static private ILogger loggerForNonTerminalUsers;
+    static private ILogger logger;
 
-    static public void LoadLogger(ILogger logger) => loggerForNonTerminalUsers = logger;
+    static public void LoadLogger(ILogger _logger) => logger = _logger;
     static public void Log(string message)
-        => loggerForNonTerminalUsers?.Log(EnumLogType.Notification, $"[ServerEssentials] {message}");
+    {
+        logger?.Log(EnumLogType.Notification, $"[LevelUP] {message}");
+    }
+    static public void LogDebug(string message)
+    {
+        if (Configuration.enableExtendedLog)
+            logger?.Log(EnumLogType.Debug, $"[LevelUP] {message}");
+    }
+    static public void LogWarn(string message)
+    {
+        logger?.Log(EnumLogType.Warning, $"[LevelUP] {message}");
+    }
+    static public void LogError(string message)
+    {
+        logger?.Log(EnumLogType.Error, $"[LevelUP] {message}");
+    }
 }

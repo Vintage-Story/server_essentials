@@ -50,5 +50,5 @@
     "enableBackForDeath": true,
     "enableBackResycle": false,
     
-    "enableExtendedLogs": false
+    "enableExtendedLog": false
 }

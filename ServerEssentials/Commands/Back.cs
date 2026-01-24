@@ -40,8 +40,8 @@ public class Back
             {
                 if (lastData.Value != actualData.Value || lastData.Key != actualData.Key)
                 {
-                    if (Configuration.enableExtendedLogs)
-                        Debug.Log($"{player.PlayerName} has a new data removing the previously tick listener");
+
+                    Debug.LogDebug($"{player.PlayerName} has a new data removing the previously tick listener");
                     serverAPI.Event.UnregisterGameTickListener(tickId);
                     return;
                 }
@@ -49,8 +49,7 @@ public class Back
                 KeyValuePair<EntityPos, int> updatedData = new(actualData.Key, actualData.Value - 1);
                 if (updatedData.Value <= 0)
                 {
-                    if (Configuration.enableExtendedLogs)
-                        Debug.Log($"{player.PlayerName} back command has timeout removing it...");
+                    Debug.LogDebug($"{player.PlayerName} back command has timeout removing it...");
                     serverAPI.Event.UnregisterGameTickListener(tickId);
                     backData.Remove(player.PlayerUID);
                     return;
@@ -130,11 +129,8 @@ public class Back
                 EntityPos playerActualPosition = player.Entity.Pos.Copy();
                 float playerActualHealth = player.Entity.GetBehavior<EntityBehaviorHealth>()?.Health ?? 0;
 
-                if (Configuration.enableExtendedLogs)
-                {
-                    Debug.Log($"{player.PlayerName}: POS: {playerLastPosition.XYZ},{playerActualPosition.XYZ}");
-                    Debug.Log($"{player.PlayerName}: Health: {playerLastHealth},{playerActualHealth}");
-                }
+                Debug.LogDebug($"{player.PlayerName}: POS: {playerLastPosition.XYZ},{playerActualPosition.XYZ}");
+                Debug.LogDebug($"{player.PlayerName}: Health: {playerLastHealth},{playerActualHealth}");
 
                 if (!Configuration.backCommandCanMove)
                 {
@@ -149,8 +145,7 @@ public class Back
 
                 if (!Configuration.backCommandCanReceiveDamage)
                 {
-                    // This is necessary because the health system keep changing between server ticks for some fucking reason
-                    if (Math.Abs(playerLastHealth - playerActualHealth) > 0.1)
+                    if (playerActualHealth < playerLastHealth && (playerLastHealth - playerActualHealth) > 0.1f)
                     {
                         player.SendMessage(0, Configuration.translationBackCancelledDueDamage, EnumChatType.CommandError);
                         serverAPI.Event.UnregisterGameTickListener(tickId);

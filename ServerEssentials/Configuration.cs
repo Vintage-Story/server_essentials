@@ -135,7 +135,7 @@ public static class Configuration
     public static bool enableBackForDeath = true;
     public static bool enableBackResycle = false;
     #endregion
-    public static bool enableExtendedLogs = true;
+    public static bool enableExtendedLog = true;
 
     public static void UpdateBaseConfigurations(ICoreAPI api)
     {
@@ -481,12 +481,12 @@ public static class Configuration
                 else enableBackResycle = (bool)value;
             else Debug.Log("CONFIGURATION ERROR: enableBackResycle not set");
         }
-        { //enableExtendedLogs
-            if (baseConfigs.TryGetValue("enableExtendedLogs", out object value))
-                if (value is null) Debug.Log("CONFIGURATION ERROR: enableExtendedLogs is null");
-                else if (value is not bool) Debug.Log($"CONFIGURATION ERROR: enableExtendedLogs is not boolean is {value.GetType()}");
-                else enableExtendedLogs = (bool)value;
-            else Debug.Log("CONFIGURATION ERROR: enableExtendedLogs not set");
+        { //enableExtendedLog
+            if (baseConfigs.TryGetValue("enableExtendedLog", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: enableExtendedLog is null");
+                else if (value is not bool) Debug.Log($"CONFIGURATION ERROR: enableExtendedLog is not boolean is {value.GetType()}");
+                else enableExtendedLog = (bool)value;
+            else Debug.Log("CONFIGURATION ERROR: enableExtendedLog not set");
         }
     }
     #endregion

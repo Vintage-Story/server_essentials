@@ -6,7 +6,7 @@
         "BoboDev"
     ],
     "description": "Essentials commands and functions for servers",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "side": "server",
     "dependencies": {
         "game": ""
