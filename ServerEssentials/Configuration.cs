@@ -111,6 +111,7 @@ public static class Configuration
     public static bool tpaCommandCanMove = false;
     public static bool tpaCommandCanReceiveDamage = false;
     public static bool tpaCommandResetCooldownOnCancellation = true;
+    public static bool tpaAutoAccept = false;
     public static bool enableTpaAcceptCommand = true;
     public static string tpaAcceptPrivilege = "chat";
     public static List<string> tpaAcceptSyntaxes = ["tpaaccept", "tpaccept", "tpaa"];
@@ -334,6 +335,13 @@ public static class Configuration
                 else tpaCommandResetCooldownOnCancellation = (bool)value;
             else Debug.Log("CONFIGURATION ERROR: tpaCommandResetCooldownOnCancellation not set");
         }
+        { //tpaAutoAccept
+            if (baseConfigs.TryGetValue("tpaAutoAccept", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: tpaAutoAccept is null");
+                else if (value is not bool) Debug.Log($"CONFIGURATION ERROR: tpaAutoAccept is not boolean is {value.GetType()}");
+                else tpaAutoAccept = (bool)value;
+            else Debug.Log("CONFIGURATION ERROR: tpaAutoAccept not set");
+        }
         { //enableTpaAcceptCommand
             if (baseConfigs.TryGetValue("enableTpaAcceptCommand", out object value))
                 if (value is null) Debug.Log("CONFIGURATION ERROR: enableTpaAcceptCommand is null");
@@ -525,6 +533,7 @@ public static class Configuration
     public static string translationTpaCancelledDueMoving = "Teleport canceled, because you moved";
     public static string translationTpaCancelledDueDamage = "Teleport canceled, because you received damage";
     public static string translationTpaOutRequestNotification = "{0} send you a tpa request, /tpaaccept or /tpadeny";
+    public static string translationTpaAutoAcceptNotification = "{0} is being teleported to you";
     public static string translationTpaRequestExpired = "{0} Tpa has expired";
     public static string translationTpaRequestCancelled = "Teleport cancelled, by {0}";
     public static string translationTpaRequestAccepted = "Request accepted don't move for {0} seconds";
@@ -750,6 +759,13 @@ public static class Configuration
                 else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationTpaOutRequestNotification is not string is {value.GetType()}");
                 else translationTpaOutRequestNotification = (string)value;
             else Debug.Log("TRANSLATION ERROR: translationTpaOutRequestNotification not set");
+        }
+        { //translationTpaAutoAcceptNotification
+            if (baseConfigs.TryGetValue("translationTpaAutoAcceptNotification", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationTpaAutoAcceptNotification is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationTpaAutoAcceptNotification is not string is {value.GetType()}");
+                else translationTpaAutoAcceptNotification = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationTpaAutoAcceptNotification not set");
         }
         { //translationTpaRequestExpired
             if (baseConfigs.TryGetValue("translationTpaRequestExpired", out object value))

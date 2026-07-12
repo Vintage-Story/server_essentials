@@ -140,6 +140,12 @@ public class TPA
         else
             tpaRequests[playerToTeleport.PlayerUID] = [player.PlayerUID];
 
+        if (Configuration.tpaAutoAccept)
+        {
+            (playerToTeleport as IServerPlayer).SendMessage(0, new StringBuilder().AppendFormat(Configuration.translationTpaAutoAcceptNotification, player.PlayerName).ToString(), EnumChatType.Notification);
+            return ExecuteTpaAccept(playerToTeleport as IServerPlayer, player);
+        }
+
         (playerToTeleport as IServerPlayer).SendMessage(0, new StringBuilder().AppendFormat(Configuration.translationTpaOutRequestNotification, player.PlayerName).ToString(), EnumChatType.Notification);
 
         long tickid = 0;
@@ -209,176 +215,186 @@ public class TPA
             if (playerTeleporting is null)
                 return TextCommandResult.Success(Configuration.translationTpaRequestNotFound, "12");
 
-            EntityPos playerLastPosition;
-            float playerLastHealth;
+            return ExecuteTpaAccept(player, playerTeleporting as IServerPlayer);
+        }
+        return TextCommandResult.Success(Configuration.translationTpaNoRequests, "11");
+    }
 
-            if (tpaCooldowns.TryGetValue(playerTeleporting.PlayerUID, out _))
-                return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationTpaRequesterOnCooldown, playerTeleporting.PlayerName).ToString(), "7");
+    private TextCommandResult ExecuteTpaAccept(IServerPlayer receiver, IServerPlayer teleporting)
+    {
+        if (tpaCooldowns.TryGetValue(teleporting.PlayerUID, out _))
+            return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationTpaRequesterOnCooldown, teleporting.PlayerName).ToString(), "7");
 
-            long tickId = 0;
-            long tickCooldownId = 0;
+        long tickId = 0;
+        long tickCooldownId = 0;
+        uint ticksPassed = 0;
+        EntityPos playerLastPosition;
+        float playerLastHealth;
 
-            uint ticksPassed = 0;
-
-            void OnTpaCooldownTick(float obj)
+        void OnTpaCooldownTick(float obj)
+        {
+            if (tpaCooldowns.TryGetValue(teleporting.PlayerUID, out _))
             {
-                if (tpaCooldowns.TryGetValue(playerTeleporting.PlayerUID, out _))
+                tpaCooldowns[teleporting.PlayerUID] -= 1;
+                if (tpaCooldowns[teleporting.PlayerUID] <= 0)
                 {
-                    tpaCooldowns[playerTeleporting.PlayerUID] -= 1;
-                    if (tpaCooldowns[playerTeleporting.PlayerUID] <= 0)
-                    {
-                        tpaCooldowns.Remove(playerTeleporting.PlayerUID);
-                        serverAPI.Event.UnregisterGameTickListener(tickCooldownId);
-                    }
+                    tpaCooldowns.Remove(teleporting.PlayerUID);
+                    serverAPI.Event.UnregisterGameTickListener(tickCooldownId);
                 }
-                else serverAPI.Event.UnregisterGameTickListener(tickCooldownId);
             }
-            void OnTpaAcceptTick(float obj)
+            else serverAPI.Event.UnregisterGameTickListener(tickCooldownId);
+        }
+        void OnTpaAcceptTick(float obj)
+        {
+            void RemoveDelay()
             {
-                void RemoveDelay()
+                if (tpaDelays.TryGetValue(receiver.PlayerUID, out _))
                 {
-                    if (tpaDelays.TryGetValue(player.PlayerUID, out _))
+                    tpaDelays[receiver.PlayerUID].Remove(teleporting.PlayerUID);
+                    if (tpaDelays[receiver.PlayerUID].Count == 0)
+                        tpaDelays.Remove(receiver.PlayerUID);
+                }
+            }
+            void ResetCooldown()
+            {
+                if (Configuration.tpaCommandResetCooldownOnCancellation)
+                    tpaCooldowns.Remove(teleporting.PlayerUID);
+            }
+
+            if (tpaDelays.TryGetValue(receiver.PlayerUID, out List<string> requests))
+            {
+                bool stillInDelay = false;
+                foreach (string request in requests)
+                {
+                    if (request == teleporting.PlayerUID)
                     {
-                        tpaDelays[player.PlayerUID].Remove(playerTeleporting.PlayerUID);
-                        if (tpaDelays[player.PlayerUID].Count == 0)
-                            tpaDelays.Remove(player.PlayerUID);
+                        stillInDelay = true;
+                        break;
                     }
                 }
-                void ResetCooldown()
-                {
-                    if (Configuration.tpaCommandResetCooldownOnCancellation)
-                        tpaCooldowns.Remove(playerTeleporting.PlayerUID);
-                }
 
-                if (tpaDelays.TryGetValue(player.PlayerUID, out List<string> requests))
-                {
-                    bool stillInDelay = false;
-                    foreach (string request in requests)
-                    {
-                        if (request == playerTeleporting.PlayerUID)
-                        {
-                            stillInDelay = true;
-                            break;
-                        }
-                    }
-
-                    if (!stillInDelay)
-                    {
-                        RemoveDelay();
-                        ResetCooldown();
-                        (playerTeleporting as IServerPlayer).SendMessage(0, new StringBuilder().AppendFormat(Configuration.translationTpaRequestCancelled, player.PlayerName).ToString(), EnumChatType.CommandError);
-                        serverAPI.Event.UnregisterGameTickListener(tickId);
-
-                        Debug.LogDebug($"{playerTeleporting.PlayerName} canceled due to not on tpaDelays");
-                        return;
-                    }
-                }
-                else
+                if (!stillInDelay)
                 {
                     RemoveDelay();
                     ResetCooldown();
-                    (playerTeleporting as IServerPlayer).SendMessage(0, new StringBuilder().AppendFormat(Configuration.translationTpaRequestCancelled, player.PlayerName).ToString(), EnumChatType.CommandError);
+                    teleporting.SendMessage(0, new StringBuilder().AppendFormat(Configuration.translationTpaRequestCancelled, receiver.PlayerName).ToString(), EnumChatType.CommandError);
                     serverAPI.Event.UnregisterGameTickListener(tickId);
 
-                    Debug.LogDebug($"{playerTeleporting.PlayerName} canceled due to {player.PlayerName} missing tpaDelays");
+                    Debug.LogDebug($"{teleporting.PlayerName} canceled due to not on tpaDelays");
+                    return;
+                }
+            }
+            else
+            {
+                RemoveDelay();
+                ResetCooldown();
+                teleporting.SendMessage(0, new StringBuilder().AppendFormat(Configuration.translationTpaRequestCancelled, receiver.PlayerName).ToString(), EnumChatType.CommandError);
+                serverAPI.Event.UnregisterGameTickListener(tickId);
+
+                Debug.LogDebug($"{teleporting.PlayerName} canceled due to {receiver.PlayerName} missing tpaDelays");
+                return;
+            }
+
+            EntityPos playerActualPosition = teleporting.Entity.Pos.Copy();
+            float playerActualHealth = teleporting.Entity.GetBehavior<EntityBehaviorHealth>()?.Health ?? 0;
+
+            Debug.LogDebug($"{teleporting.PlayerName}: POS: {playerLastPosition.XYZ},{playerActualPosition.XYZ}");
+            Debug.LogDebug($"{teleporting.PlayerName}: Health: {playerLastHealth},{playerActualHealth}");
+
+            if (!Configuration.tpaCommandCanMove)
+            {
+                if (playerActualPosition.XYZ != playerLastPosition.XYZ)
+                {
+                    RemoveDelay();
+                    teleporting.SendMessage(0, Configuration.translationTpaCancelledDueMoving, EnumChatType.CommandError);
+                    serverAPI.Event.UnregisterGameTickListener(tickId);
+
+                    Debug.LogDebug($"{teleporting.PlayerName} moved during tpa: {playerActualPosition.XYZ} : {playerLastPosition.XYZ}");
+                    return;
+                }
+            }
+
+            if (!Configuration.tpaCommandCanReceiveDamage)
+            {
+                if (playerActualHealth < playerLastHealth && (playerLastHealth - playerActualHealth) > 0.1f)
+                {
+                    RemoveDelay();
+                    ResetCooldown();
+                    teleporting.SendMessage(0, Configuration.translationTpaCancelledDueDamage, EnumChatType.CommandError);
+                    serverAPI.Event.UnregisterGameTickListener(tickId);
+
+                    Debug.LogDebug($"{teleporting.PlayerName} received damage during tpa: {playerActualHealth} : {playerLastHealth}");
                     return;
                 }
 
-                EntityPos playerActualPosition = playerTeleporting.Entity.Pos.Copy();
-                float playerActualHealth = playerTeleporting.Entity.GetBehavior<EntityBehaviorHealth>()?.Health ?? 0;
-
-                Debug.LogDebug($"{playerTeleporting.PlayerName}: POS: {playerLastPosition.XYZ},{playerActualPosition.XYZ}");
-                Debug.LogDebug($"{playerTeleporting.PlayerName}: Health: {playerLastHealth},{playerActualHealth}");
-
-                if (!Configuration.tpaCommandCanMove)
-                {
-                    if (playerActualPosition.XYZ != playerLastPosition.XYZ)
-                    {
-                        RemoveDelay();
-                        (playerTeleporting as IServerPlayer).SendMessage(0, Configuration.translationTpaCancelledDueMoving, EnumChatType.CommandError);
-                        serverAPI.Event.UnregisterGameTickListener(tickId);
-
-                        Debug.LogDebug($"{playerTeleporting.PlayerName} moved during tpa: {playerActualPosition.XYZ} : {playerLastPosition.XYZ}");
-                        return;
-                    }
-                }
-
-                if (!Configuration.tpaCommandCanReceiveDamage)
-                {
-                    if (playerActualHealth < playerLastHealth && (playerLastHealth - playerActualHealth) > 0.1f)
-                    {
-                        RemoveDelay();
-                        ResetCooldown();
-                        (playerTeleporting as IServerPlayer).SendMessage(0, Configuration.translationTpaCancelledDueDamage, EnumChatType.CommandError);
-                        serverAPI.Event.UnregisterGameTickListener(tickId);
-
-                        Debug.LogDebug($"{playerTeleporting.PlayerName} received damage during tpa: {playerActualHealth} : {playerLastHealth}");
-                        return;
-                    }
-
-                    playerLastHealth = playerActualHealth;
-                }
-
-                ticksPassed++;
-                if (ticksPassed >= Configuration.tpaCommandDelay)
-                {
-                    if (tpaDelays.TryGetValue(player.PlayerUID, out _))
-                        tpaDelays[player.PlayerUID].Remove(playerTeleporting.PlayerUID);
-                    if (tpaDelays[player.PlayerUID].Count == 0)
-                        tpaDelays.Remove(player.PlayerUID);
-
-                    if (Configuration.enableBackForTpa)
-                        Back.InvokePlayerTeleported(playerTeleporting as IServerPlayer, playerTeleporting.Entity.Pos.Copy());
-                    playerTeleporting.Entity.TeleportTo(player.Entity.Pos);
-                    serverAPI.Event.UnregisterGameTickListener(tickId);
-
-                    if (Configuration.tpaCooldown > 0)
-                    {
-                        tpaCooldowns[playerTeleporting.PlayerUID] = Configuration.tpaCooldown;
-                        tickCooldownId = serverAPI.Event.RegisterGameTickListener(OnTpaCooldownTick, 1000, 0);
-                    }
-                }
+                playerLastHealth = playerActualHealth;
             }
 
-            if (Configuration.tpaCommandDelay <= 0)
+            ticksPassed++;
+            if (ticksPassed >= Configuration.tpaCommandDelay)
             {
-                if (Configuration.enableBackForTpa)
-                    Back.InvokePlayerTeleported(playerTeleporting as IServerPlayer, playerTeleporting.Entity.Pos.Copy());
+                if (tpaDelays.TryGetValue(receiver.PlayerUID, out _))
+                    tpaDelays[receiver.PlayerUID].Remove(teleporting.PlayerUID);
+                if (tpaDelays[receiver.PlayerUID].Count == 0)
+                    tpaDelays.Remove(receiver.PlayerUID);
 
-                playerTeleporting.Entity.TeleportTo(player.Entity.Pos);
+                if (Configuration.enableBackForTpa)
+                    Back.InvokePlayerTeleported(teleporting, teleporting.Entity.Pos.Copy());
+                teleporting.Entity.TeleportTo(receiver.Entity.Pos);
+                serverAPI.Event.UnregisterGameTickListener(tickId);
 
                 if (Configuration.tpaCooldown > 0)
                 {
-                    tpaCooldowns[playerTeleporting.PlayerUID] = Configuration.tpaCooldown;
+                    tpaCooldowns[teleporting.PlayerUID] = Configuration.tpaCooldown;
                     tickCooldownId = serverAPI.Event.RegisterGameTickListener(OnTpaCooldownTick, 1000, 0);
                 }
+            }
+        }
 
-                return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationTpaAccepted, playerTeleporting.PlayerName).ToString(), "13");
+        if (Configuration.tpaCommandDelay <= 0)
+        {
+            if (Configuration.enableBackForTpa)
+                Back.InvokePlayerTeleported(teleporting, teleporting.Entity.Pos.Copy());
+
+            teleporting.Entity.TeleportTo(receiver.Entity.Pos);
+
+            if (Configuration.tpaCooldown > 0)
+            {
+                tpaCooldowns[teleporting.PlayerUID] = Configuration.tpaCooldown;
+                tickCooldownId = serverAPI.Event.RegisterGameTickListener(OnTpaCooldownTick, 1000, 0);
             }
 
-            if (tpaDelays.TryGetValue(player.PlayerUID, out _))
-                if (!tpaDelays[player.PlayerUID].Contains(playerTeleporting.PlayerUID))
-                    tpaDelays[player.PlayerUID].Add(playerTeleporting.PlayerUID);
-                else
-                    return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationTpaAlreadyChanneling, playerTeleporting.PlayerName).ToString(), "14");
-            else
-                tpaDelays[player.PlayerUID] = [playerTeleporting.PlayerUID];
+            if (tpaRequests.TryGetValue(receiver.PlayerUID, out _))
+            {
+                tpaRequests[receiver.PlayerUID].Remove(teleporting.PlayerUID);
+                if (tpaRequests[receiver.PlayerUID].Count == 0)
+                    tpaRequests.Remove(receiver.PlayerUID);
+            }
 
-            playerLastPosition = playerTeleporting.Entity.Pos.Copy();
-            playerLastHealth = playerTeleporting.Entity.GetBehavior<EntityBehaviorHealth>()?.Health ?? 0;
-            if (playerLastHealth <= 0 && !Configuration.tpaCommandCanReceiveDamage)
-                return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationTpaRequesterHealthInvalid, playerTeleporting.PlayerName).ToString(), "3");
-
-            tickId = serverAPI.Event.RegisterGameTickListener(OnTpaAcceptTick, 1000, 0);
-
-            tpaRequests[player.PlayerUID].Remove(playerTeleporting.PlayerUID);
-            if (tpaRequests[player.PlayerUID].Count == 0)
-                tpaRequests.Remove(player.PlayerUID);
-
-            (playerTeleporting as IServerPlayer).SendMessage(0, new StringBuilder().AppendFormat(Configuration.translationTpaRequestAccepted, Configuration.tpaCommandDelay).ToString(), EnumChatType.Notification);
-            return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationTpaAccepted, playerTeleporting.PlayerName).ToString(), "13");
+            return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationTpaAccepted, teleporting.PlayerName).ToString(), "13");
         }
-        return TextCommandResult.Success(Configuration.translationTpaNoRequests, "11");
+
+        if (tpaDelays.TryGetValue(receiver.PlayerUID, out _))
+            if (!tpaDelays[receiver.PlayerUID].Contains(teleporting.PlayerUID))
+                tpaDelays[receiver.PlayerUID].Add(teleporting.PlayerUID);
+            else
+                return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationTpaAlreadyChanneling, teleporting.PlayerName).ToString(), "14");
+        else
+            tpaDelays[receiver.PlayerUID] = [teleporting.PlayerUID];
+
+        playerLastPosition = teleporting.Entity.Pos.Copy();
+        playerLastHealth = teleporting.Entity.GetBehavior<EntityBehaviorHealth>()?.Health ?? 0;
+        if (playerLastHealth <= 0 && !Configuration.tpaCommandCanReceiveDamage)
+            return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationTpaRequesterHealthInvalid, teleporting.PlayerName).ToString(), "3");
+
+        tickId = serverAPI.Event.RegisterGameTickListener(OnTpaAcceptTick, 1000, 0);
+
+        tpaRequests[receiver.PlayerUID].Remove(teleporting.PlayerUID);
+        if (tpaRequests[receiver.PlayerUID].Count == 0)
+            tpaRequests.Remove(receiver.PlayerUID);
+
+        teleporting.SendMessage(0, new StringBuilder().AppendFormat(Configuration.translationTpaRequestAccepted, Configuration.tpaCommandDelay).ToString(), EnumChatType.Notification);
+        return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationTpaAccepted, teleporting.PlayerName).ToString(), "13");
     }
 
     private TextCommandResult TpaDenyCommand(TextCommandCallingArgs args)

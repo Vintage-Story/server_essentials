@@ -27,6 +27,7 @@
     "tpaCommandCanMove": false,
     "tpaCommandCanReceiveDamage": false,
     "tpaCommandResetCooldownOnCancellation": true,
+    "tpaAutoAccept": false,
     "enableTpaAcceptCommand": true,
     "tpaAcceptPrivilege": "chat",
     "tpaAcceptSyntaxes": ["tpaaccept", "tpaccept", "tpaa"],

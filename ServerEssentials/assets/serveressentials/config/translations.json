@@ -29,6 +29,7 @@
     "translationTpaCancelledDueMoving": "Teleport canceled, because you moved",
     "translationTpaCancelledDueDamage": "Teleport canceled, because you received damage",
     "translationTpaOutRequestNotification": "{0} send you a tpa request, /tpaaccept or /tpadeny",
+    "translationTpaAutoAcceptNotification": "{0} is being teleported to you",
     "translationTpaRequestExpired": "{0} Tpa has expired",
     "translationTpaRequestCancelled": "Teleport cancelled, by {0}",
     "translationTpaRequestAccepted": "Request accepted don't move for {0} seconds",
