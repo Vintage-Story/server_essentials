@@ -43,19 +43,19 @@ public class Debug
     static public void LoadLogger(ILogger _logger) => logger = _logger;
     static public void Log(string message)
     {
-        logger?.Log(EnumLogType.Notification, $"[LevelUP] {message}");
+        logger?.Log(EnumLogType.Notification, $"[ServerEssentials] {message}");
     }
     static public void LogDebug(string message)
     {
         if (Configuration.enableExtendedLog)
-            logger?.Log(EnumLogType.Debug, $"[LevelUP] {message}");
+            logger?.Log(EnumLogType.Debug, $"[ServerEssentials] {message}");
     }
     static public void LogWarn(string message)
     {
-        logger?.Log(EnumLogType.Warning, $"[LevelUP] {message}");
+        logger?.Log(EnumLogType.Warning, $"[ServerEssentials] {message}");
     }
     static public void LogError(string message)
     {
-        logger?.Log(EnumLogType.Error, $"[LevelUP] {message}");
+        logger?.Log(EnumLogType.Error, $"[ServerEssentials] {message}");
     }
 }
