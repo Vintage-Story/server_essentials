@@ -110,6 +110,9 @@ public class Home
     {
         IServerPlayer player = args.Caller.Player as IServerPlayer;
 
+        if (!Utils.CheckPlayerInventoryForCommandCost(player, Configuration.homeCostItemId, Configuration.homeCostQuantity))
+            return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationNotEnoughItems, Utils.GetItemName(Configuration.homeCostItemId), Configuration.homeCostQuantity).ToString(), "7");
+
         byte[] data = serverAPI.WorldManager.SaveGame.GetData($"ServerEssentials_homes_{player.PlayerUID}");
         Dictionary<string, string> playerHomes = data == null ? [] : SerializerUtil.Deserialize<Dictionary<string, string>>(data);
 
@@ -120,11 +123,14 @@ public class Home
         if (!args.Parsers[0].IsMissing)
             homeName = args[0] as string;
 
+        if (!Utils.ConsumeItemsForCommandCost(player, Configuration.homeCostItemId, Configuration.homeCostQuantity))
+            return TextCommandResult.Success(string.Empty, "7");
+
         playerHomes[homeName] = $"{player.Entity.Pos.X},{player.Entity.Pos.Y},{player.Entity.Pos.Z}";
 
         serverAPI.WorldManager.SaveGame.StoreData($"ServerEssentials_homes_{player.PlayerUID}", SerializerUtil.Serialize(playerHomes));
 
-        return TextCommandResult.Success(Configuration.translationHomeHomeSet, "1");
+        return TextCommandResult.Success(HomeSetMessage(), "1");
     }
 
     private TextCommandResult HomeCommand(TextCommandCallingArgs args)
@@ -136,6 +142,9 @@ public class Home
 
         if (homeDelays.Contains(player.PlayerUID))
             return TextCommandResult.Success(Configuration.translationHomeAlreadySent, "7");
+
+        if (!Utils.CheckPlayerInventoryForCommandCost(player, Configuration.homeCostItemId, Configuration.homeCostQuantity))
+            return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationNotEnoughItems, Utils.GetItemName(Configuration.homeCostItemId), Configuration.homeCostQuantity).ToString(), "7");
 
         byte[] data = serverAPI.WorldManager.SaveGame.GetData($"ServerEssentials_homes_{player.PlayerUID}");
         Dictionary<string, string> playerHomes = data == null ? [] : SerializerUtil.Deserialize<Dictionary<string, string>>(data);
@@ -204,6 +213,13 @@ public class Home
                 ticksPassed++;
                 if (ticksPassed >= Configuration.homeCommandDelay)
                 {
+                    if (!Utils.ConsumeItemsForCommandCost(player, Configuration.homeCostItemId, Configuration.homeCostQuantity))
+                    {
+                        serverAPI.Event.UnregisterGameTickListener(tickId);
+                        homeDelays.Remove(player.PlayerUID);
+                        return;
+                    }
+
                     if (Configuration.enableBackForHome)
                         Back.InvokePlayerTeleported(player, player.Entity.Pos.Copy());
                     player.Entity.TeleportTo(new Vec3d(coordinates[0], coordinates[1], coordinates[2]));
@@ -219,6 +235,9 @@ public class Home
 
             if (Configuration.homeCommandDelay <= 0)
             {
+                if (!Utils.ConsumeItemsForCommandCost(player, Configuration.homeCostItemId, Configuration.homeCostQuantity))
+                    return TextCommandResult.Success(string.Empty, "7");
+
                 if (Configuration.enableBackForHome)
                     Back.InvokePlayerTeleported(player, player.Entity.Pos.Copy());
 
@@ -230,7 +249,7 @@ public class Home
                     tickCooldownId = serverAPI.Event.RegisterGameTickListener(OnHomeCooldownTick, 1000, 0);
                 }
 
-                return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationHomeTeleporting, homeName).ToString(), "2");
+                return TextCommandResult.Success(HomeTeleportingMessage(homeName), "2");
             }
 
             playerLastPosition = player.Entity.Pos.Copy();
@@ -241,10 +260,24 @@ public class Home
             homeDelays.Add(player.PlayerUID);
             tickId = serverAPI.Event.RegisterGameTickListener(OnHomeTick, 1000, 1000);
 
-            return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationHomeTeleporting, homeName).ToString(), "2");
+            return TextCommandResult.Success(HomeTeleportingMessage(homeName), "2");
         }
         else
             return TextCommandResult.Success(Configuration.translationHomeHomeNotSet, "2");
+    }
+
+    private static string HomeSetMessage()
+    {
+        if (!string.IsNullOrEmpty(Configuration.homeCostItemId) && Configuration.homeCostQuantity > 0)
+            return new StringBuilder().AppendFormat(Configuration.translationHomeHomeSetCost, Configuration.homeCostQuantity, Utils.GetItemName(Configuration.homeCostItemId)).ToString();
+        return Configuration.translationHomeHomeSet;
+    }
+
+    private static string HomeTeleportingMessage(string homeName)
+    {
+        if (!string.IsNullOrEmpty(Configuration.homeCostItemId) && Configuration.homeCostQuantity > 0)
+            return new StringBuilder().AppendFormat(Configuration.translationHomeTeleportingCost, homeName, Configuration.homeCostQuantity, Utils.GetItemName(Configuration.homeCostItemId)).ToString();
+        return new StringBuilder().AppendFormat(Configuration.translationHomeTeleporting, homeName).ToString();
     }
 
     private TextCommandResult DelHomeCommand(TextCommandCallingArgs args)

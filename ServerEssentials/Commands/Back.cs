@@ -101,6 +101,9 @@ public class Back
         if (backDelays.Contains(player.PlayerUID))
             return TextCommandResult.Success(Configuration.translationBackAlreadySent, "7");
 
+        if (!Utils.CheckPlayerInventoryForCommandCost(player, Configuration.backCostItemId, Configuration.backCostQuantity))
+            return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationNotEnoughItems, Utils.GetItemName(Configuration.backCostItemId), Configuration.backCostQuantity).ToString(), "7");
+
         if (backData.TryGetValue(player.PlayerUID, out KeyValuePair<EntityPos, int> data))
         {
             EntityPos playerLastPosition;
@@ -165,6 +168,13 @@ public class Back
                 ticksPassed++;
                 if (ticksPassed >= Configuration.backCommandDelay)
                 {
+                    if (!Utils.ConsumeItemsForCommandCost(player, Configuration.backCostItemId, Configuration.backCostQuantity))
+                    {
+                        serverAPI.Event.UnregisterGameTickListener(tickId);
+                        backDelays.Remove(player.PlayerUID);
+                        return;
+                    }
+
                     if (Configuration.enableBackResycle)
                         InvokePlayerTeleported(player, player.Entity.Pos.Copy());
                     else
@@ -184,6 +194,9 @@ public class Back
 
             if (Configuration.backCommandDelay <= 0)
             {
+                if (!Utils.ConsumeItemsForCommandCost(player, Configuration.backCostItemId, Configuration.backCostQuantity))
+                    return TextCommandResult.Success(string.Empty, "7");
+
                 if (Configuration.enableBackResycle)
                     InvokePlayerTeleported(player, player.Entity.Pos.Copy());
                 else
@@ -196,7 +209,7 @@ public class Back
                     backCooldowns[player.PlayerUID] = Configuration.backCooldown;
                     tickCooldownId = serverAPI.Event.RegisterGameTickListener(OnBackCooldownTick, 1000, 0);
                 }
-                return TextCommandResult.Success(Configuration.translationBackTeleporting, "3");
+                return TextCommandResult.Success(BackTeleportingMessage(), "3");
             }
 
             playerLastPosition = player.Entity.Pos.Copy();
@@ -208,10 +221,17 @@ public class Back
             backDelays.Add(player.PlayerUID);
             tickId = serverAPI.Event.RegisterGameTickListener(OnBackTick, 1000, 1000);
 
-            return TextCommandResult.Success(Configuration.translationBackTeleporting, "2");
+            return TextCommandResult.Success(BackTeleportingMessage(), "2");
         }
         else
             return TextCommandResult.Success(Configuration.translationBackNoBackAvailable, "2");
+    }
+
+    private static string BackTeleportingMessage()
+    {
+        if (!string.IsNullOrEmpty(Configuration.backCostItemId) && Configuration.backCostQuantity > 0)
+            return new StringBuilder().AppendFormat(Configuration.translationBackTeleportingCost, Configuration.backCostQuantity, Utils.GetItemName(Configuration.backCostItemId)).ToString();
+        return Configuration.translationBackTeleporting;
     }
 
     private void BackPlayerDeath(IServerPlayer byPlayer, DamageSource damageSource)

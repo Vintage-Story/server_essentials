@@ -91,6 +91,8 @@ public static class Configuration
     public static List<string> homeSyntaxes = ["home"];
     public static int homeCommandDelay = 5;
     public static int homeCooldown = 120;
+    public static string homeCostItemId = "";
+    public static int homeCostQuantity = 0;
     public static bool homeCommandCanMove = false;
     public static bool homeCommandCanReceiveDamage = false;
     public static bool enableDelHomeCommand = true;
@@ -107,6 +109,8 @@ public static class Configuration
     public static List<string> tpaSyntaxes = ["tpa"];
     public static int tpaCommandDelay = 5;
     public static int tpaCooldown = 120;
+    public static string tpaCostItemId = "";
+    public static int tpaCostQuantity = 0;
     public static int tpaTimeout = 10;
     public static bool tpaCommandCanMove = false;
     public static bool tpaCommandCanReceiveDamage = false;
@@ -127,8 +131,10 @@ public static class Configuration
     public static string backPrivilege = "chat";
     public static List<string> backSyntaxes = ["back"];
     public static int backCooldown = 120;
+    public static string backCostItemId = "";
+    public static int backCostQuantity = 0;
     public static int backCommandDelay = 5;
-    public static int backCommandDuration = 30;
+    public static int backCommandDuration = 300;
     public static bool backCommandCanMove = false;
     public static bool backCommandCanReceiveDamage = false;
     public static bool enableBackForHome = true;
@@ -208,6 +214,20 @@ public static class Configuration
                 else if (value is not long) Debug.Log($"CONFIGURATION ERROR: homeCooldown is not int is {value.GetType()}");
                 else homeCooldown = (int)(long)value;
             else Debug.Log("CONFIGURATION ERROR: homeCooldown not set");
+        }
+        { //homeCostItemId
+            if (baseConfigs.TryGetValue("homeCostItemId", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: homeCostItemId is null");
+                else if (value is not string) Debug.Log($"CONFIGURATION ERROR: homeCostItemId is not string is {value.GetType()}");
+                else homeCostItemId = (string)value;
+            else Debug.Log("CONFIGURATION ERROR: homeCostItemId not set");
+        }
+        { //homeCostQuantity
+            if (baseConfigs.TryGetValue("homeCostQuantity", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: homeCostQuantity is null");
+                else if (value is not long) Debug.Log($"CONFIGURATION ERROR: homeCostQuantity is not int is {value.GetType()}");
+                else homeCostQuantity = (int)(long)value;
+            else Debug.Log("CONFIGURATION ERROR: homeCostQuantity not set");
         }
         { //homeCommandCanMove
             if (baseConfigs.TryGetValue("homeCommandCanMove", out object value))
@@ -313,6 +333,20 @@ public static class Configuration
                 else if (value is not long) Debug.Log($"CONFIGURATION ERROR: tpaTimeout is not int is {value.GetType()}");
                 else tpaTimeout = (int)(long)value;
             else Debug.Log("CONFIGURATION ERROR: tpaTimeout not set");
+        }
+        { //tpaCostItemId
+            if (baseConfigs.TryGetValue("tpaCostItemId", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: tpaCostItemId is null");
+                else if (value is not string) Debug.Log($"CONFIGURATION ERROR: tpaCostItemId is not string is {value.GetType()}");
+                else tpaCostItemId = (string)value;
+            else Debug.Log("CONFIGURATION ERROR: tpaCostItemId not set");
+        }
+        { //tpaCostQuantity
+            if (baseConfigs.TryGetValue("tpaCostQuantity", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: tpaCostQuantity is null");
+                else if (value is not long) Debug.Log($"CONFIGURATION ERROR: tpaCostQuantity is not int is {value.GetType()}");
+                else tpaCostQuantity = (int)(long)value;
+            else Debug.Log("CONFIGURATION ERROR: tpaCostQuantity not set");
         }
         { //tpaCommandCanMove
             if (baseConfigs.TryGetValue("tpaCommandCanMove", out object value))
@@ -433,6 +467,20 @@ public static class Configuration
                 else backCooldown = (int)(long)value;
             else Debug.Log("CONFIGURATION ERROR: backCooldown not set");
         }
+        { //backCostItemId
+            if (baseConfigs.TryGetValue("backCostItemId", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: backCostItemId is null");
+                else if (value is not string) Debug.Log($"CONFIGURATION ERROR: backCostItemId is not string is {value.GetType()}");
+                else backCostItemId = (string)value;
+            else Debug.Log("CONFIGURATION ERROR: backCostItemId not set");
+        }
+        { //backCostQuantity
+            if (baseConfigs.TryGetValue("backCostQuantity", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: backCostQuantity is null");
+                else if (value is not long) Debug.Log($"CONFIGURATION ERROR: backCostQuantity is not int is {value.GetType()}");
+                else backCostQuantity = (int)(long)value;
+            else Debug.Log("CONFIGURATION ERROR: backCostQuantity not set");
+        }
         { //backCommandDelay
             if (baseConfigs.TryGetValue("backCommandDelay", out object value))
                 if (value is null) Debug.Log("CONFIGURATION ERROR: backCommandDelay is null");
@@ -505,6 +553,7 @@ public static class Configuration
     public static string translationBackCancelledDueDamage = "Teleport canceled, because you received damage";
     public static string translationBackHealthInvalid = "Cannot teleport, your health is invalid";
     public static string translationBackTeleporting = "Teleporting to previously position...";
+    public static string translationBackTeleportingCost = "Teleporting to previously position... will cost {0} {1}";
     public static string translationBackNoBackAvailable = "No previously position to go back!";
     public static string translationBackCooldown = "Back command is still on cooldown: {0} seconds remaining...";
     public static string translationBackDescription = "Returns to your previous position before teleporting using /back";
@@ -515,6 +564,7 @@ public static class Configuration
     public static string translationHomeCancelledDueDamage = "Teleport canceled, because you received damage";
     public static string translationHomeMaxHomesReached = "Max homes reached";
     public static string translationHomeHomeSet = "Home Set!";
+    public static string translationHomeHomeSetCost = "Home Set! Cost {0} {1}";
     public static string translationHomeHomeNotSet = "Home not set!";
     public static string translationHomeHomeRemoved = "Home removed!";
     public static string translationHomeHomeInvalid = "Invalid home!";
@@ -522,6 +572,7 @@ public static class Configuration
     public static string translationHomeHomesList = "Your homes:";
     public static string translationHomeCooldown = "Home command is still on cooldown: {0} seconds remaining...";
     public static string translationHomeTeleporting = "Teleporting to {0}...";
+    public static string translationHomeTeleportingCost = "Teleporting to {0}... will cost {1} {2}";
     public static string translationHomeHealthInvalid = "Cannot teleport, your health is invalid";
     public static string translationSetHomeDescription = "Set a home using /sethome homename";
     public static string translationHomeDescription = "Teleport to a home using /home homename";
@@ -537,6 +588,7 @@ public static class Configuration
     public static string translationTpaRequestExpired = "{0} Tpa has expired";
     public static string translationTpaRequestCancelled = "Teleport cancelled, by {0}";
     public static string translationTpaRequestAccepted = "Request accepted don't move for {0} seconds";
+    public static string translationTpaRequestAcceptedCost = "Request accepted don't move for {0} seconds. Will cost {1} {2}";
     public static string translationTpaCooldown = "Tpa command is still on cooldown: {0} seconds remaining...";
     public static string translationTpaMissingPlayer = "Missing player name";
     public static string translationTpaAlreadySent = "Already sent";
@@ -556,6 +608,7 @@ public static class Configuration
     public static string translationTpaDenyDescription = "Deny a teleport request /tpadeny playername";
     public static string translationTpaCancelDescription = "Cancel a channeling teleport request /tpacancel playername";
     #endregion
+    public static string translationNotEnoughItems = "You don't have the required items: {1}x {0}";
     public static void UpdateTranslationsConfigurations(ICoreAPI api)
     {
         Dictionary<string, object> baseConfigs = LoadConfigurationByDirectoryAndName(
@@ -591,6 +644,13 @@ public static class Configuration
                 else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationBackTeleporting is not string is {value.GetType()}");
                 else translationBackTeleporting = (string)value;
             else Debug.Log("TRANSLATION ERROR: translationBackTeleporting not set");
+        }
+        { //translationBackTeleportingCost
+            if (baseConfigs.TryGetValue("translationBackTeleportingCost", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationBackTeleportingCost is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationBackTeleportingCost is not string is {value.GetType()}");
+                else translationBackTeleportingCost = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationBackTeleportingCost not set");
         }
         { //translationBackNoBackAvailable
             if (baseConfigs.TryGetValue("translationBackNoBackAvailable", out object value))
@@ -648,6 +708,13 @@ public static class Configuration
                 else translationHomeHomeSet = (string)value;
             else Debug.Log("TRANSLATION ERROR: translationHomeHomeSet not set");
         }
+        { //translationHomeHomeSetCost
+            if (baseConfigs.TryGetValue("translationHomeHomeSetCost", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationHomeHomeSetCost is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationHomeHomeSetCost is not string is {value.GetType()}");
+                else translationHomeHomeSetCost = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationHomeHomeSetCost not set");
+        }
         { //translationHomeHomeNotSet
             if (baseConfigs.TryGetValue("translationHomeHomeNotSet", out object value))
                 if (value is null) Debug.Log("TRANSLATION ERROR: translationHomeHomeNotSet is null");
@@ -696,6 +763,13 @@ public static class Configuration
                 else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationHomeTeleporting is not string is {value.GetType()}");
                 else translationHomeTeleporting = (string)value;
             else Debug.Log("TRANSLATION ERROR: translationHomeTeleporting not set");
+        }
+        { //translationHomeTeleportingCost
+            if (baseConfigs.TryGetValue("translationHomeTeleportingCost", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationHomeTeleportingCost is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationHomeTeleportingCost is not string is {value.GetType()}");
+                else translationHomeTeleportingCost = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationHomeTeleportingCost not set");
         }
         { //translationHomeHealthInvalid
             if (baseConfigs.TryGetValue("translationHomeHealthInvalid", out object value))
@@ -787,6 +861,13 @@ public static class Configuration
                 else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationTpaRequestAccepted is not string is {value.GetType()}");
                 else translationTpaRequestAccepted = (string)value;
             else Debug.Log("TRANSLATION ERROR: translationTpaRequestAccepted not set");
+        }
+        { //translationTpaRequestAcceptedCost
+            if (baseConfigs.TryGetValue("translationTpaRequestAcceptedCost", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationTpaRequestAcceptedCost is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationTpaRequestAcceptedCost is not string is {value.GetType()}");
+                else translationTpaRequestAcceptedCost = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationTpaRequestAcceptedCost not set");
         }
         { //translationTpaCooldown
             if (baseConfigs.TryGetValue("translationTpaCooldown", out object value))
@@ -920,6 +1001,13 @@ public static class Configuration
                 else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationTpaCancelDescription is not string is {value.GetType()}");
                 else translationTpaCancelDescription = (string)value;
             else Debug.Log("TRANSLATION ERROR: translationTpaCancelDescription not set");
+        }
+        { //translationNotEnoughItems
+            if (baseConfigs.TryGetValue("translationNotEnoughItems", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationNotEnoughItems is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationNotEnoughItems is not string is {value.GetType()}");
+                else translationNotEnoughItems = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationNotEnoughItems not set");
         }
     }
     #endregion

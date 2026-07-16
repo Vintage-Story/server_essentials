@@ -3,6 +3,7 @@
     "translationBackCancelledDueDamage": "Teleport canceled, because you received damage",
     "translationBackHealthInvalid": "Cannot teleport, your health is invalid",
     "translationBackTeleporting": "Teleporting to previously position...",
+    "translationBackTeleportingCost": "Teleporting to previously position... will cost {0} {1}",
     "translationBackNoBackAvailable": "No previously position to go back!",
     "translationBackCooldown": "Back command is still on cooldown: {0} seconds remaining...",
     "translationBackDescription": "Returns to your previous position before teleporting using /back",
@@ -12,6 +13,7 @@
     "translationHomeCancelledDueDamage": "Teleport canceled, because you received damage",
     "translationHomeMaxHomesReached": "Max homes reached",
     "translationHomeHomeSet": "Home Set!",
+    "translationHomeHomeSetCost": "Home Set! Cost {0} {1}",
     "translationHomeHomeNotSet": "Home not set!",
     "translationHomeHomeRemoved": "Home removed!",
     "translationHomeHomeInvalid": "Invalid home!",
@@ -19,6 +21,7 @@
     "translationHomeHomesList": "Your homes:",
     "translationHomeCooldown": "Home command is still on cooldown: {0} seconds remaining...",
     "translationHomeTeleporting": "Teleporting to {0}...",
+    "translationHomeTeleportingCost": "Teleporting to {0}... will cost {1} {2}",
     "translationHomeHealthInvalid": "Cannot teleport, your health is invalid",
     "translationSetHomeDescription": "Set a home using /sethome homename",
     "translationHomeDescription": "Teleport to a home using /home homename",
@@ -33,6 +36,7 @@
     "translationTpaRequestExpired": "{0} Tpa has expired",
     "translationTpaRequestCancelled": "Teleport cancelled, by {0}",
     "translationTpaRequestAccepted": "Request accepted don't move for {0} seconds",
+    "translationTpaRequestAcceptedCost": "Request accepted don't move for {0} seconds. Will cost {1} {2}",
     "translationTpaCooldown": "Tpa command is still on cooldown: {0} seconds remaining...",
     "translationTpaMissingPlayer": "Missing player name",
     "translationTpaAlreadySent": "Already sent",
@@ -50,5 +54,6 @@
     "translationTpaDescription": "Teleport to a player using /tpa playername",
     "translationTpaAcceptDescription": "A requested player will teleport to you using /tpaaccept playername",
     "translationTpaDenyDescription": "Deny a teleport request /tpadeny playername",
-    "translationTpaCancelDescription": "Cancel a channeling teleport request /tpacancel playername"
+    "translationTpaCancelDescription": "Cancel a channeling teleport request /tpacancel playername",
+    "translationNotEnoughItems": "You don't have the required items: {1}x {0}"
 }

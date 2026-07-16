@@ -116,6 +116,9 @@ public class TPA
         if (tpaCooldowns.TryGetValue(player.PlayerUID, out int secondsRemaing))
             return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationTpaCooldown, secondsRemaing).ToString(), "7");
 
+        if (!Utils.CheckPlayerInventoryForCommandCost(player, Configuration.tpaCostItemId, Configuration.tpaCostQuantity))
+            return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationNotEnoughItems, Utils.GetItemName(Configuration.tpaCostItemId), Configuration.tpaCostQuantity).ToString(), "7");
+
         if (args.Parsers[0].IsMissing)
             return TextCommandResult.Success(Configuration.translationTpaMissingPlayer, "8");
 
@@ -333,6 +336,14 @@ public class TPA
             ticksPassed++;
             if (ticksPassed >= Configuration.tpaCommandDelay)
             {
+                if (!Utils.ConsumeItemsForCommandCost(teleporting, Configuration.tpaCostItemId, Configuration.tpaCostQuantity))
+                {
+                    RemoveDelay();
+                    ResetCooldown();
+                    serverAPI.Event.UnregisterGameTickListener(tickId);
+                    return;
+                }
+
                 if (tpaDelays.TryGetValue(receiver.PlayerUID, out _))
                     tpaDelays[receiver.PlayerUID].Remove(teleporting.PlayerUID);
                 if (tpaDelays[receiver.PlayerUID].Count == 0)
@@ -353,6 +364,9 @@ public class TPA
 
         if (Configuration.tpaCommandDelay <= 0)
         {
+            if (!Utils.ConsumeItemsForCommandCost(teleporting, Configuration.tpaCostItemId, Configuration.tpaCostQuantity))
+                return TextCommandResult.Success(string.Empty, "7");
+
             if (Configuration.enableBackForTpa)
                 Back.InvokePlayerTeleported(teleporting, teleporting.Entity.Pos.Copy());
 
@@ -374,6 +388,9 @@ public class TPA
             return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationTpaAccepted, teleporting.PlayerName).ToString(), "13");
         }
 
+        if (!Utils.CheckPlayerInventoryForCommandCost(teleporting, Configuration.tpaCostItemId, Configuration.tpaCostQuantity))
+            return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationNotEnoughItems, Utils.GetItemName(Configuration.tpaCostItemId), Configuration.tpaCostQuantity).ToString(), "7");
+
         if (tpaDelays.TryGetValue(receiver.PlayerUID, out _))
             if (!tpaDelays[receiver.PlayerUID].Contains(teleporting.PlayerUID))
                 tpaDelays[receiver.PlayerUID].Add(teleporting.PlayerUID);
@@ -393,8 +410,15 @@ public class TPA
         if (tpaRequests[receiver.PlayerUID].Count == 0)
             tpaRequests.Remove(receiver.PlayerUID);
 
-        teleporting.SendMessage(0, new StringBuilder().AppendFormat(Configuration.translationTpaRequestAccepted, Configuration.tpaCommandDelay).ToString(), EnumChatType.Notification);
+        teleporting.SendMessage(0, TpaRequestAcceptedMessage(), EnumChatType.Notification);
         return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationTpaAccepted, teleporting.PlayerName).ToString(), "13");
+    }
+
+    private static string TpaRequestAcceptedMessage()
+    {
+        if (!string.IsNullOrEmpty(Configuration.tpaCostItemId) && Configuration.tpaCostQuantity > 0)
+            return new StringBuilder().AppendFormat(Configuration.translationTpaRequestAcceptedCost, Configuration.tpaCommandDelay, Configuration.tpaCostQuantity, Utils.GetItemName(Configuration.tpaCostItemId)).ToString();
+        return new StringBuilder().AppendFormat(Configuration.translationTpaRequestAccepted, Configuration.tpaCommandDelay).ToString();
     }
 
     private TextCommandResult TpaDenyCommand(TextCommandCallingArgs args)
