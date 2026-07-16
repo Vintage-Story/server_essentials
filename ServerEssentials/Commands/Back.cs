@@ -110,6 +110,7 @@ public class Back
             long tickCooldownId = 0;
 
             uint ticksPassed = 0;
+            float playerLastMaxHealth;
 
             void OnBackCooldownTick(float obj)
             {
@@ -145,7 +146,11 @@ public class Back
 
                 if (!Configuration.backCommandCanReceiveDamage)
                 {
-                    if (playerActualHealth < playerLastHealth && (playerLastHealth - playerActualHealth) > 0.1f)
+                    float playerActualMaxHealth = player.Entity.GetBehavior<EntityBehaviorHealth>()?.MaxHealth ?? 0;
+                    float healthDiff = playerLastHealth - playerActualHealth;
+                    float maxHealthDiff = playerLastMaxHealth - playerActualMaxHealth;
+
+                    if ((healthDiff - maxHealthDiff) > 0.1f)
                     {
                         player.SendMessage(0, Configuration.translationBackCancelledDueDamage, EnumChatType.CommandError);
                         serverAPI.Event.UnregisterGameTickListener(tickId);
@@ -154,6 +159,7 @@ public class Back
                     }
 
                     playerLastHealth = playerActualHealth;
+                    playerLastMaxHealth = playerActualMaxHealth;
                 }
 
                 ticksPassed++;
@@ -195,6 +201,7 @@ public class Back
 
             playerLastPosition = player.Entity.Pos.Copy();
             playerLastHealth = player.Entity.GetBehavior<EntityBehaviorHealth>()?.Health ?? 0;
+            playerLastMaxHealth = player.Entity.GetBehavior<EntityBehaviorHealth>()?.MaxHealth ?? 0;
             if (playerLastHealth <= 0 && !Configuration.backCommandCanReceiveDamage)
                 return TextCommandResult.Success(Configuration.translationBackHealthInvalid, "3");
 
