@@ -9,6 +9,7 @@ public class Initialization : ModSystem
     private Commands.Home homeCommands;
     private Commands.TPA tpaCommands;
     private Commands.Back backCommands;
+    private Commands.CustomCommands customCommands;
     #endregion
 
     public override void StartServerSide(ICoreServerAPI api)
@@ -19,6 +20,7 @@ public class Initialization : ModSystem
         homeCommands = new(api);
         tpaCommands = new(api);
         backCommands = new(api);
+        customCommands = new(api);
     }
 
     public override void StartPre(ICoreAPI api)

@@ -28,6 +28,10 @@
     "translationDelHomeDescription": "Delete a home /delhome homename",
     "translationListHomeDescription": "List the homes you have set",
     "translationHomeAlreadySent": "Already Sent",
+    "translationBuyHomeDescription": "Buy an extra home slot using /buyhome",
+    "translationBuyHomePurchased": "Home slot purchased! Max homes: {0}",
+    "translationBuyHomePurchasedCost": "Home slot purchased! Cost {0} {1}. Max homes: {2}",
+    "translationBuyHomeMaxSlotsReached": "Maximum purchasable home slots reached!",
     
     "translationTpaCancelledDueMoving": "Teleport canceled, because you moved",
     "translationTpaCancelledDueDamage": "Teleport canceled, because you received damage",

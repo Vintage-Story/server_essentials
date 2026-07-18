@@ -104,6 +104,23 @@ public class Home
                 Debug.Log($"Command created: /{syntax}");
             }
         }
+        if (Configuration.enableBuyHomeCommand)
+        {
+            foreach (string syntax in Configuration.buyHomeSyntaxes)
+            {
+                // Create buyhome command
+                api.ChatCommands.Create(syntax)
+                // Description
+                .WithDescription(Configuration.translationBuyHomeDescription)
+                // Chat privilege
+                .RequiresPrivilege(Configuration.buyHomePrivilege)
+                // Only if is a valid player
+                .RequiresPlayer()
+                // Function Handle
+                .HandleWith(BuyHomeCommand);
+                Debug.Log($"Command created: /{syntax}");
+            }
+        }
     }
 
     private TextCommandResult SetHomeCommand(TextCommandCallingArgs args)
@@ -116,12 +133,13 @@ public class Home
         byte[] data = serverAPI.WorldManager.SaveGame.GetData($"ServerEssentials_homes_{player.PlayerUID}");
         Dictionary<string, string> playerHomes = data == null ? [] : SerializerUtil.Deserialize<Dictionary<string, string>>(data);
 
-        if (playerHomes.Count >= Configuration.maxHomes)
-            return TextCommandResult.Success(Configuration.translationHomeMaxHomesReached, "0");
-
         string homeName = "home";
         if (!args.Parsers[0].IsMissing)
             homeName = args[0] as string;
+
+        int playerMaxHomes = Configuration.maxHomes + GetPlayerExtraHomes(player.PlayerUID);
+        if (playerHomes.Count >= playerMaxHomes && !playerHomes.ContainsKey(homeName))
+            return TextCommandResult.Success(Configuration.translationHomeMaxHomesReached, "0");
 
         if (!Utils.ConsumeItemsForCommandCost(player, Configuration.homeCostItemId, Configuration.homeCostQuantity))
             return TextCommandResult.Success(string.Empty, "7");
@@ -264,6 +282,43 @@ public class Home
         }
         else
             return TextCommandResult.Success(Configuration.translationHomeHomeNotSet, "2");
+    }
+
+    private int GetPlayerExtraHomes(string playerUID)
+    {
+        byte[] data = serverAPI.WorldManager.SaveGame.GetData($"ServerEssentials_extraHomes_{playerUID}");
+        return data == null ? 0 : SerializerUtil.Deserialize<int>(data);
+    }
+
+    private TextCommandResult BuyHomeCommand(TextCommandCallingArgs args)
+    {
+        IServerPlayer player = args.Caller.Player as IServerPlayer;
+
+        int currentExtra = GetPlayerExtraHomes(player.PlayerUID);
+
+        if (Configuration.buyHomeMaxSlots > 0 && currentExtra >= Configuration.buyHomeMaxSlots)
+            return TextCommandResult.Success(Configuration.translationBuyHomeMaxSlotsReached, "0");
+
+        int actualCost = Configuration.buyHomeCostQuantity + (currentExtra * Configuration.buyHomeCostIncrement);
+
+        if (!Utils.CheckPlayerInventoryForCommandCost(player, Configuration.buyHomeCostItemId, actualCost))
+            return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationNotEnoughItems, Utils.GetItemName(Configuration.buyHomeCostItemId), actualCost).ToString(), "7");
+
+        if (!Utils.ConsumeItemsForCommandCost(player, Configuration.buyHomeCostItemId, actualCost))
+            return TextCommandResult.Success(string.Empty, "7");
+
+        int newExtra = currentExtra + 1;
+        serverAPI.WorldManager.SaveGame.StoreData($"ServerEssentials_extraHomes_{player.PlayerUID}", SerializerUtil.Serialize(newExtra));
+
+        int newMax = Configuration.maxHomes + newExtra;
+        return TextCommandResult.Success(BuyHomeMessage(actualCost, newMax), "1");
+    }
+
+    private static string BuyHomeMessage(int actualCost, int newMax)
+    {
+        if (!string.IsNullOrEmpty(Configuration.buyHomeCostItemId) && actualCost > 0)
+            return new StringBuilder().AppendFormat(Configuration.translationBuyHomePurchasedCost, actualCost, Utils.GetItemName(Configuration.buyHomeCostItemId), newMax).ToString();
+        return new StringBuilder().AppendFormat(Configuration.translationBuyHomePurchased, newMax).ToString();
     }
 
     private static string HomeSetMessage()

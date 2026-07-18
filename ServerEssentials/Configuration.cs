@@ -7,6 +7,16 @@ using Vintagestory.API.Common;
 
 namespace ServerEssentials;
 
+public class CustomCommandEntry
+{
+    [JsonProperty("syntax")]
+    public string Syntax { get; set; } = "";
+    [JsonProperty("message")]
+    public string Message { get; set; } = "";
+    [JsonProperty("privilege")]
+    public string Privilege { get; set; } = "chat";
+}
+
 #pragma warning disable CA2211
 public static class Configuration
 {
@@ -102,6 +112,13 @@ public static class Configuration
     public static string listHomePrivilege = "chat";
     public static List<string> listHomeSyntaxes = ["listhome"];
     public static bool ListHomeCommandShowCoords = true;
+    public static bool enableBuyHomeCommand = true;
+    public static string buyHomePrivilege = "chat";
+    public static List<string> buyHomeSyntaxes = ["buyhome"];
+    public static string buyHomeCostItemId = "game:gear-temporal";
+    public static int buyHomeCostQuantity = 1;
+    public static int buyHomeMaxSlots = 0;
+    public static int buyHomeCostIncrement = 0;
     #endregion
     #region tpa
     public static bool enableTpaCommand = true;
@@ -142,6 +159,7 @@ public static class Configuration
     public static bool enableBackForDeath = true;
     public static bool enableBackResycle = false;
     #endregion
+    public static List<CustomCommandEntry> customCommands = [];
     public static bool enableExtendedLog = true;
 
     public static void UpdateBaseConfigurations(ICoreAPI api)
@@ -291,6 +309,55 @@ public static class Configuration
                 else if (value is not bool) Debug.Log($"CONFIGURATION ERROR: ListHomeCommandShowCoords is not boolean is {value.GetType()}");
                 else ListHomeCommandShowCoords = (bool)value;
             else Debug.Log("CONFIGURATION ERROR: ListHomeCommandShowCoords not set");
+        }
+        { //enableBuyHomeCommand
+            if (baseConfigs.TryGetValue("enableBuyHomeCommand", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: enableBuyHomeCommand is null");
+                else if (value is not bool) Debug.Log($"CONFIGURATION ERROR: enableBuyHomeCommand is not boolean is {value.GetType()}");
+                else enableBuyHomeCommand = (bool)value;
+            else Debug.Log("CONFIGURATION ERROR: enableBuyHomeCommand not set");
+        }
+        { //buyHomePrivilege
+            if (baseConfigs.TryGetValue("buyHomePrivilege", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: buyHomePrivilege is null");
+                else if (value is not string) Debug.Log($"CONFIGURATION ERROR: buyHomePrivilege is not string is {value.GetType()}");
+                else buyHomePrivilege = (string)value;
+            else Debug.Log("CONFIGURATION ERROR: buyHomePrivilege not set");
+        }
+        { //buyHomeSyntaxes
+            if (baseConfigs.TryGetValue("buyHomeSyntaxes", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: buyHomeSyntaxes is null");
+                else if (value is not JArray) Debug.Log($"CONFIGURATION ERROR: buyHomeSyntaxes is not array is {value.GetType()}");
+                else buyHomeSyntaxes = (value as JArray).ToObject<List<string>>();
+            else Debug.Log("CONFIGURATION ERROR: buyHomeSyntaxes not set");
+        }
+        { //buyHomeCostItemId
+            if (baseConfigs.TryGetValue("buyHomeCostItemId", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: buyHomeCostItemId is null");
+                else if (value is not string) Debug.Log($"CONFIGURATION ERROR: buyHomeCostItemId is not string is {value.GetType()}");
+                else buyHomeCostItemId = (string)value;
+            else Debug.Log("CONFIGURATION ERROR: buyHomeCostItemId not set");
+        }
+        { //buyHomeCostQuantity
+            if (baseConfigs.TryGetValue("buyHomeCostQuantity", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: buyHomeCostQuantity is null");
+                else if (value is not long) Debug.Log($"CONFIGURATION ERROR: buyHomeCostQuantity is not int is {value.GetType()}");
+                else buyHomeCostQuantity = (int)(long)value;
+            else Debug.Log("CONFIGURATION ERROR: buyHomeCostQuantity not set");
+        }
+        { //buyHomeMaxSlots
+            if (baseConfigs.TryGetValue("buyHomeMaxSlots", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: buyHomeMaxSlots is null");
+                else if (value is not long) Debug.Log($"CONFIGURATION ERROR: buyHomeMaxSlots is not int is {value.GetType()}");
+                else buyHomeMaxSlots = (int)(long)value;
+            else Debug.Log("CONFIGURATION ERROR: buyHomeMaxSlots not set");
+        }
+        { //buyHomeCostIncrement
+            if (baseConfigs.TryGetValue("buyHomeCostIncrement", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: buyHomeCostIncrement is null");
+                else if (value is not long) Debug.Log($"CONFIGURATION ERROR: buyHomeCostIncrement is not int is {value.GetType()}");
+                else buyHomeCostIncrement = (int)(long)value;
+            else Debug.Log("CONFIGURATION ERROR: buyHomeCostIncrement not set");
         }
         { //enableTpaCommand
             if (baseConfigs.TryGetValue("enableTpaCommand", out object value))
@@ -537,6 +604,13 @@ public static class Configuration
                 else enableBackResycle = (bool)value;
             else Debug.Log("CONFIGURATION ERROR: enableBackResycle not set");
         }
+        { //customCommands
+            if (baseConfigs.TryGetValue("customCommands", out object value))
+                if (value is null) Debug.Log("CONFIGURATION ERROR: customCommands is null");
+                else if (value is not JArray) Debug.Log($"CONFIGURATION ERROR: customCommands is not array is {value.GetType()}");
+                else customCommands = (value as JArray).ToObject<List<CustomCommandEntry>>();
+            else Debug.Log("CONFIGURATION ERROR: customCommands not set");
+        }
         { //enableExtendedLog
             if (baseConfigs.TryGetValue("enableExtendedLog", out object value))
                 if (value is null) Debug.Log("CONFIGURATION ERROR: enableExtendedLog is null");
@@ -579,6 +653,10 @@ public static class Configuration
     public static string translationDelHomeDescription = "Delete a home /delhome homename";
     public static string translationListHomeDescription = "View the home lists";
     public static string translationHomeAlreadySent = "Already Sent";
+    public static string translationBuyHomeDescription = "Buy an extra home slot using /buyhome";
+    public static string translationBuyHomePurchased = "Home slot purchased! Max homes: {0}";
+    public static string translationBuyHomePurchasedCost = "Home slot purchased! Cost {0} {1}. Max homes: {2}";
+    public static string translationBuyHomeMaxSlotsReached = "Maximum purchasable home slots reached!";
     #endregion
     #region tpa
     public static string translationTpaCancelledDueMoving = "Teleport canceled, because you moved";
@@ -812,6 +890,34 @@ public static class Configuration
                 else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationHomeAlreadySent is not string is {value.GetType()}");
                 else translationHomeAlreadySent = (string)value;
             else Debug.Log("TRANSLATION ERROR: translationHomeAlreadySent not set");
+        }
+        { //translationBuyHomeDescription
+            if (baseConfigs.TryGetValue("translationBuyHomeDescription", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationBuyHomeDescription is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationBuyHomeDescription is not string is {value.GetType()}");
+                else translationBuyHomeDescription = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationBuyHomeDescription not set");
+        }
+        { //translationBuyHomePurchased
+            if (baseConfigs.TryGetValue("translationBuyHomePurchased", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationBuyHomePurchased is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationBuyHomePurchased is not string is {value.GetType()}");
+                else translationBuyHomePurchased = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationBuyHomePurchased not set");
+        }
+        { //translationBuyHomePurchasedCost
+            if (baseConfigs.TryGetValue("translationBuyHomePurchasedCost", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationBuyHomePurchasedCost is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationBuyHomePurchasedCost is not string is {value.GetType()}");
+                else translationBuyHomePurchasedCost = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationBuyHomePurchasedCost not set");
+        }
+        { //translationBuyHomeMaxSlotsReached
+            if (baseConfigs.TryGetValue("translationBuyHomeMaxSlotsReached", out object value))
+                if (value is null) Debug.Log("TRANSLATION ERROR: translationBuyHomeMaxSlotsReached is null");
+                else if (value is not string) Debug.Log($"TRANSLATION ERROR: translationBuyHomeMaxSlotsReached is not string is {value.GetType()}");
+                else translationBuyHomeMaxSlotsReached = (string)value;
+            else Debug.Log("TRANSLATION ERROR: translationBuyHomeMaxSlotsReached not set");
         }
         { //translationTpaCancelledDueMoving
             if (baseConfigs.TryGetValue("translationTpaCancelledDueMoving", out object value))
