@@ -29,16 +29,16 @@ public class Home
     {
         serverAPI = api;
 
-        if (Configuration.enableSetHomeCommand)
+        if (Configuration.Home.enableSetHomeCommand)
         {
-            foreach (string syntax in Configuration.setHomeSyntaxes)
+            foreach (string syntax in Configuration.Home.setHomeSyntaxes)
             {
                 // Create sethome command
                 api.ChatCommands.Create(syntax)
                 // Description
-                .WithDescription(Configuration.translationHomeDescription)
+                .WithDescription(Configuration.Translations.translationHomeDescription)
                 // Chat privilege
-                .RequiresPrivilege(Configuration.setHomePrivilege)
+                .RequiresPrivilege(Configuration.Home.setHomePrivilege)
                 // Only if is a valid player
                 .RequiresPlayer()
                 // Need a argument called home name or not
@@ -46,79 +46,79 @@ public class Home
                 // Function Handle
                 .HandleWith(SetHomeCommand);
 
-                Debug.Log($"Command created: /{syntax}");
+                Initialization.Logger.Log($"Command created: /{syntax}");
             }
         }
-        if (Configuration.enableHomeCommand)
+        if (Configuration.Home.enableHomeCommand)
         {
-            foreach (string syntax in Configuration.homeSyntaxes)
+            foreach (string syntax in Configuration.Home.homeSyntaxes)
             {
                 // Create home command
                 api.ChatCommands.Create(syntax)
                 // Description
-                .WithDescription(Configuration.translationHomeDescription)
+                .WithDescription(Configuration.Translations.translationHomeDescription)
                 // Chat privilege
-                .RequiresPrivilege(Configuration.homePrivilege)
+                .RequiresPrivilege(Configuration.Home.homePrivilege)
                 // Only if is a valid player
                 .RequiresPlayer()
                 // Need a argument called home name or not
                 .WithArgs(new StringArgParser("homename", false))
                 // Function Handle
                 .HandleWith(HomeCommand);
-                Debug.Log($"Command created: /{syntax}");
+                Initialization.Logger.Log($"Command created: /{syntax}");
             }
         }
-        if (Configuration.enableDelHomeCommand)
+        if (Configuration.Home.enableDelHomeCommand)
         {
-            foreach (string syntax in Configuration.delHomeSyntaxes)
+            foreach (string syntax in Configuration.Home.delHomeSyntaxes)
             {
                 // Create delhome command
                 api.ChatCommands.Create(syntax)
                 // Description
-                .WithDescription(Configuration.translationDelHomeDescription)
+                .WithDescription(Configuration.Translations.translationDelHomeDescription)
                 // Chat privilege
-                .RequiresPrivilege(Configuration.delHomePrivilege)
+                .RequiresPrivilege(Configuration.Home.delHomePrivilege)
                 // Only if is a valid player
                 .RequiresPlayer()
                 // Need a argument called home name or not
                 .WithArgs(new StringArgParser("homename", false))
                 // Function Handle
                 .HandleWith(DelHomeCommand);
-                Debug.Log($"Command created: /{syntax}");
+                Initialization.Logger.Log($"Command created: /{syntax}");
             }
         }
-        if (Configuration.enableListHomeCommand)
+        if (Configuration.Home.enableListHomeCommand)
         {
-            foreach (string syntax in Configuration.listHomeSyntaxes)
+            foreach (string syntax in Configuration.Home.listHomeSyntaxes)
             {
                 // Create listhome command
                 api.ChatCommands.Create(syntax)
                 // Description
-                .WithDescription(Configuration.translationListHomeDescription)
+                .WithDescription(Configuration.Translations.translationListHomeDescription)
                 // Chat privilege
-                .RequiresPrivilege(Configuration.listHomePrivilege)
+                .RequiresPrivilege(Configuration.Home.listHomePrivilege)
                 // Only if is a valid player
                 .RequiresPlayer()
                 // Function Handle
                 .HandleWith(ListHomeCommand);
-                Debug.Log($"Command created: /{syntax}");
+                Initialization.Logger.Log($"Command created: /{syntax}");
             }
         }
-        if (Configuration.enableBuyHomeCommand)
+        if (Configuration.Home.enableBuyHomeCommand)
         {
-            foreach (string syntax in Configuration.buyHomeSyntaxes)
+            foreach (string syntax in Configuration.Home.buyHomeSyntaxes)
             {
                 // Create buyhome command
                 api.ChatCommands.Create(syntax)
                 // Description
-                .WithDescription(Configuration.translationBuyHomeDescription)
+                .WithDescription(Configuration.Translations.translationBuyHomeDescription)
                 // Chat privilege
-                .RequiresPrivilege(Configuration.buyHomePrivilege)
+                .RequiresPrivilege(Configuration.Home.buyHomePrivilege)
                 // Only if is a valid player
                 .RequiresPlayer()
                 // Function Handle
                 .HandleWith(BuyHomeCommand);
-                Debug.Log($"Command created: /{syntax}");
+                Initialization.Logger.Log($"Command created: /{syntax}");
             }
         }
     }
@@ -127,8 +127,8 @@ public class Home
     {
         IServerPlayer player = args.Caller.Player as IServerPlayer;
 
-        if (!Utils.CheckPlayerInventoryForCommandCost(player, Configuration.homeCostItemId, Configuration.homeCostQuantity))
-            return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationNotEnoughItems, Utils.GetItemName(Configuration.homeCostItemId), Configuration.homeCostQuantity).ToString(), "7");
+        if (!Utils.CheckPlayerInventoryForCommandCost(player, Configuration.Home.homeCostItemId, Configuration.Home.homeCostQuantity))
+            return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.Translations.translationNotEnoughItems, Utils.GetItemName(Configuration.Home.homeCostItemId), Configuration.Home.homeCostQuantity).ToString(), "7");
 
         byte[] data = serverAPI.WorldManager.SaveGame.GetData($"ServerEssentials_homes_{player.PlayerUID}");
         Dictionary<string, string> playerHomes = data == null ? [] : SerializerUtil.Deserialize<Dictionary<string, string>>(data);
@@ -137,11 +137,11 @@ public class Home
         if (!args.Parsers[0].IsMissing)
             homeName = args[0] as string;
 
-        int playerMaxHomes = Configuration.maxHomes + GetPlayerExtraHomes(player.PlayerUID);
+        int playerMaxHomes = Configuration.Home.maxHomes + GetPlayerExtraHomes(player.PlayerUID);
         if (playerHomes.Count >= playerMaxHomes && !playerHomes.ContainsKey(homeName))
-            return TextCommandResult.Success(Configuration.translationHomeMaxHomesReached, "0");
+            return TextCommandResult.Success(Configuration.Translations.translationHomeMaxHomesReached, "0");
 
-        if (!Utils.ConsumeItemsForCommandCost(player, Configuration.homeCostItemId, Configuration.homeCostQuantity))
+        if (!Utils.ConsumeItemsForCommandCost(player, Configuration.Home.homeCostItemId, Configuration.Home.homeCostQuantity))
             return TextCommandResult.Success(string.Empty, "7");
 
         playerHomes[homeName] = $"{player.Entity.Pos.X},{player.Entity.Pos.Y},{player.Entity.Pos.Z}";
@@ -156,13 +156,13 @@ public class Home
         IServerPlayer player = args.Caller.Player as IServerPlayer;
 
         if (homeCooldowns.TryGetValue(player.PlayerUID, out int secondsRemaing))
-            return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationHomeCooldown, secondsRemaing).ToString(), "7");
+            return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.Translations.translationHomeCooldown, secondsRemaing).ToString(), "7");
 
         if (homeDelays.Contains(player.PlayerUID))
-            return TextCommandResult.Success(Configuration.translationHomeAlreadySent, "7");
+            return TextCommandResult.Success(Configuration.Translations.translationHomeAlreadySent, "7");
 
-        if (!Utils.CheckPlayerInventoryForCommandCost(player, Configuration.homeCostItemId, Configuration.homeCostQuantity))
-            return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationNotEnoughItems, Utils.GetItemName(Configuration.homeCostItemId), Configuration.homeCostQuantity).ToString(), "7");
+        if (!Utils.CheckPlayerInventoryForCommandCost(player, Configuration.Home.homeCostItemId, Configuration.Home.homeCostQuantity))
+            return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.Translations.translationNotEnoughItems, Utils.GetItemName(Configuration.Home.homeCostItemId), Configuration.Home.homeCostQuantity).ToString(), "7");
 
         byte[] data = serverAPI.WorldManager.SaveGame.GetData($"ServerEssentials_homes_{player.PlayerUID}");
         Dictionary<string, string> playerHomes = data == null ? [] : SerializerUtil.Deserialize<Dictionary<string, string>>(data);
@@ -201,25 +201,25 @@ public class Home
                 EntityPos playerActualPosition = player.Entity.Pos.Copy();
                 float playerActualHealth = player.Entity.GetBehavior<EntityBehaviorHealth>()?.Health ?? 0;
 
-                Debug.LogDebug($"{player.PlayerName}: POS: {playerLastPosition.XYZ},{playerActualPosition.XYZ}");
-                Debug.LogDebug($"{player.PlayerName}: Health: {playerLastHealth},{playerActualHealth}");
+                Initialization.Logger.LogDebug($"{player.PlayerName}: POS: {playerLastPosition.XYZ},{playerActualPosition.XYZ}");
+                Initialization.Logger.LogDebug($"{player.PlayerName}: Health: {playerLastHealth},{playerActualHealth}");
 
-                if (!Configuration.homeCommandCanMove)
+                if (!Configuration.Home.homeCommandCanMove)
                 {
                     if (playerActualPosition.XYZ != playerLastPosition.XYZ)
                     {
-                        player.SendMessage(0, Configuration.translationHomeCancelledDueMoving, EnumChatType.CommandError);
+                        player.SendMessage(0, Configuration.Translations.translationHomeCancelledDueMoving, EnumChatType.CommandError);
                         serverAPI.Event.UnregisterGameTickListener(tickId);
                         homeDelays.Remove(player.PlayerUID);
                         return;
                     }
                 }
 
-                if (!Configuration.homeCommandCanReceiveDamage)
+                if (!Configuration.Home.homeCommandCanReceiveDamage)
                 {
                     if (playerActualHealth < playerLastHealth && (playerLastHealth - playerActualHealth) > 0.1f)
                     {
-                        player.SendMessage(0, Configuration.translationHomeCancelledDueDamage, EnumChatType.CommandError);
+                        player.SendMessage(0, Configuration.Translations.translationHomeCancelledDueDamage, EnumChatType.CommandError);
                         serverAPI.Event.UnregisterGameTickListener(tickId);
                         homeDelays.Remove(player.PlayerUID);
                         return;
@@ -229,41 +229,41 @@ public class Home
                 }
 
                 ticksPassed++;
-                if (ticksPassed >= Configuration.homeCommandDelay)
+                if (ticksPassed >= Configuration.Home.homeCommandDelay)
                 {
-                    if (!Utils.ConsumeItemsForCommandCost(player, Configuration.homeCostItemId, Configuration.homeCostQuantity))
+                    if (!Utils.ConsumeItemsForCommandCost(player, Configuration.Home.homeCostItemId, Configuration.Home.homeCostQuantity))
                     {
                         serverAPI.Event.UnregisterGameTickListener(tickId);
                         homeDelays.Remove(player.PlayerUID);
                         return;
                     }
 
-                    if (Configuration.enableBackForHome)
+                    if (Configuration.Back.enableBackForHome)
                         Back.InvokePlayerTeleported(player, player.Entity.Pos.Copy());
                     player.Entity.TeleportTo(new Vec3d(coordinates[0], coordinates[1], coordinates[2]));
                     serverAPI.Event.UnregisterGameTickListener(tickId);
                     homeDelays.Remove(player.PlayerUID);
-                    if (Configuration.homeCooldown > 0)
+                    if (Configuration.Home.homeCooldown > 0)
                     {
-                        homeCooldowns[player.PlayerUID] = Configuration.homeCooldown;
+                        homeCooldowns[player.PlayerUID] = Configuration.Home.homeCooldown;
                         tickCooldownId = serverAPI.Event.RegisterGameTickListener(OnHomeCooldownTick, 1000, 0);
                     }
                 }
             }
 
-            if (Configuration.homeCommandDelay <= 0)
+            if (Configuration.Home.homeCommandDelay <= 0)
             {
-                if (!Utils.ConsumeItemsForCommandCost(player, Configuration.homeCostItemId, Configuration.homeCostQuantity))
+                if (!Utils.ConsumeItemsForCommandCost(player, Configuration.Home.homeCostItemId, Configuration.Home.homeCostQuantity))
                     return TextCommandResult.Success(string.Empty, "7");
 
-                if (Configuration.enableBackForHome)
+                if (Configuration.Back.enableBackForHome)
                     Back.InvokePlayerTeleported(player, player.Entity.Pos.Copy());
 
                 player.Entity.TeleportTo(new Vec3d(coordinates[0], coordinates[1], coordinates[2]));
 
-                if (Configuration.homeCooldown > 0)
+                if (Configuration.Home.homeCooldown > 0)
                 {
-                    homeCooldowns[player.PlayerUID] = Configuration.homeCooldown;
+                    homeCooldowns[player.PlayerUID] = Configuration.Home.homeCooldown;
                     tickCooldownId = serverAPI.Event.RegisterGameTickListener(OnHomeCooldownTick, 1000, 0);
                 }
 
@@ -272,8 +272,8 @@ public class Home
 
             playerLastPosition = player.Entity.Pos.Copy();
             playerLastHealth = player.Entity.GetBehavior<EntityBehaviorHealth>()?.Health ?? 0;
-            if (playerLastHealth <= 0 && !Configuration.homeCommandCanReceiveDamage)
-                return TextCommandResult.Success(Configuration.translationHomeHealthInvalid, "3");
+            if (playerLastHealth <= 0 && !Configuration.Home.homeCommandCanReceiveDamage)
+                return TextCommandResult.Success(Configuration.Translations.translationHomeHealthInvalid, "3");
 
             homeDelays.Add(player.PlayerUID);
             tickId = serverAPI.Event.RegisterGameTickListener(OnHomeTick, 1000, 1000);
@@ -281,7 +281,7 @@ public class Home
             return TextCommandResult.Success(HomeTeleportingMessage(homeName), "2");
         }
         else
-            return TextCommandResult.Success(Configuration.translationHomeHomeNotSet, "2");
+            return TextCommandResult.Success(Configuration.Translations.translationHomeHomeNotSet, "2");
     }
 
     private int GetPlayerExtraHomes(string playerUID)
@@ -296,43 +296,43 @@ public class Home
 
         int currentExtra = GetPlayerExtraHomes(player.PlayerUID);
 
-        if (Configuration.buyHomeMaxSlots > 0 && currentExtra >= Configuration.buyHomeMaxSlots)
-            return TextCommandResult.Success(Configuration.translationBuyHomeMaxSlotsReached, "0");
+        if (Configuration.Home.buyHomeMaxSlots > 0 && currentExtra >= Configuration.Home.buyHomeMaxSlots)
+            return TextCommandResult.Success(Configuration.Translations.translationBuyHomeMaxSlotsReached, "0");
 
-        int actualCost = Configuration.buyHomeCostQuantity + (currentExtra * Configuration.buyHomeCostIncrement);
+        int actualCost = Configuration.Home.buyHomeCostQuantity + (currentExtra * Configuration.Home.buyHomeCostIncrement);
 
-        if (!Utils.CheckPlayerInventoryForCommandCost(player, Configuration.buyHomeCostItemId, actualCost))
-            return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.translationNotEnoughItems, Utils.GetItemName(Configuration.buyHomeCostItemId), actualCost).ToString(), "7");
+        if (!Utils.CheckPlayerInventoryForCommandCost(player, Configuration.Home.buyHomeCostItemId, actualCost))
+            return TextCommandResult.Success(new StringBuilder().AppendFormat(Configuration.Translations.translationNotEnoughItems, Utils.GetItemName(Configuration.Home.buyHomeCostItemId), actualCost).ToString(), "7");
 
-        if (!Utils.ConsumeItemsForCommandCost(player, Configuration.buyHomeCostItemId, actualCost))
+        if (!Utils.ConsumeItemsForCommandCost(player, Configuration.Home.buyHomeCostItemId, actualCost))
             return TextCommandResult.Success(string.Empty, "7");
 
         int newExtra = currentExtra + 1;
         serverAPI.WorldManager.SaveGame.StoreData($"ServerEssentials_extraHomes_{player.PlayerUID}", SerializerUtil.Serialize(newExtra));
 
-        int newMax = Configuration.maxHomes + newExtra;
+        int newMax = Configuration.Home.maxHomes + newExtra;
         return TextCommandResult.Success(BuyHomeMessage(actualCost, newMax), "1");
     }
 
     private static string BuyHomeMessage(int actualCost, int newMax)
     {
-        if (!string.IsNullOrEmpty(Configuration.buyHomeCostItemId) && actualCost > 0)
-            return new StringBuilder().AppendFormat(Configuration.translationBuyHomePurchasedCost, actualCost, Utils.GetItemName(Configuration.buyHomeCostItemId), newMax).ToString();
-        return new StringBuilder().AppendFormat(Configuration.translationBuyHomePurchased, newMax).ToString();
+        if (!string.IsNullOrEmpty(Configuration.Home.buyHomeCostItemId) && actualCost > 0)
+            return new StringBuilder().AppendFormat(Configuration.Translations.translationBuyHomePurchasedCost, actualCost, Utils.GetItemName(Configuration.Home.buyHomeCostItemId), newMax).ToString();
+        return new StringBuilder().AppendFormat(Configuration.Translations.translationBuyHomePurchased, newMax).ToString();
     }
 
     private static string HomeSetMessage()
     {
-        if (!string.IsNullOrEmpty(Configuration.homeCostItemId) && Configuration.homeCostQuantity > 0)
-            return new StringBuilder().AppendFormat(Configuration.translationHomeHomeSetCost, Configuration.homeCostQuantity, Utils.GetItemName(Configuration.homeCostItemId)).ToString();
-        return Configuration.translationHomeHomeSet;
+        if (!string.IsNullOrEmpty(Configuration.Home.homeCostItemId) && Configuration.Home.homeCostQuantity > 0)
+            return new StringBuilder().AppendFormat(Configuration.Translations.translationHomeHomeSetCost, Configuration.Home.homeCostQuantity, Utils.GetItemName(Configuration.Home.homeCostItemId)).ToString();
+        return Configuration.Translations.translationHomeHomeSet;
     }
 
     private static string HomeTeleportingMessage(string homeName)
     {
-        if (!string.IsNullOrEmpty(Configuration.homeCostItemId) && Configuration.homeCostQuantity > 0)
-            return new StringBuilder().AppendFormat(Configuration.translationHomeTeleportingCost, homeName, Configuration.homeCostQuantity, Utils.GetItemName(Configuration.homeCostItemId)).ToString();
-        return new StringBuilder().AppendFormat(Configuration.translationHomeTeleporting, homeName).ToString();
+        if (!string.IsNullOrEmpty(Configuration.Home.homeCostItemId) && Configuration.Home.homeCostQuantity > 0)
+            return new StringBuilder().AppendFormat(Configuration.Translations.translationHomeTeleportingCost, homeName, Configuration.Home.homeCostQuantity, Utils.GetItemName(Configuration.Home.homeCostItemId)).ToString();
+        return new StringBuilder().AppendFormat(Configuration.Translations.translationHomeTeleporting, homeName).ToString();
     }
 
     private TextCommandResult DelHomeCommand(TextCommandCallingArgs args)
@@ -350,10 +350,10 @@ public class Home
         {
             playerHomes.Remove(homeName);
             serverAPI.WorldManager.SaveGame.StoreData($"ServerEssentials_homes_{player.PlayerUID}", SerializerUtil.Serialize(playerHomes));
-            return TextCommandResult.Success(Configuration.translationHomeHomeRemoved, "3");
+            return TextCommandResult.Success(Configuration.Translations.translationHomeHomeRemoved, "3");
         }
         else
-            return TextCommandResult.Success(Configuration.translationHomeHomeInvalid, "2");
+            return TextCommandResult.Success(Configuration.Translations.translationHomeHomeInvalid, "2");
     }
 
     private TextCommandResult ListHomeCommand(TextCommandCallingArgs args)
@@ -364,13 +364,13 @@ public class Home
         Dictionary<string, string> playerHomes = data == null ? [] : SerializerUtil.Deserialize<Dictionary<string, string>>(data);
 
         if (playerHomes.Count == 0)
-            return TextCommandResult.Success(Configuration.translationHomeNoHomes, "5");
+            return TextCommandResult.Success(Configuration.Translations.translationHomeNoHomes, "5");
 
-        string homes = Configuration.translationHomeHomesList;
+        string homes = Configuration.Translations.translationHomeHomesList;
         foreach (KeyValuePair<string, string> keyValuePair in playerHomes)
         {
             homes += Environment.NewLine + keyValuePair.Key;
-            if (Configuration.ListHomeCommandShowCoords)
+            if (Configuration.Home.ListHomeCommandShowCoords)
             {
                 double[] coordinates = [.. keyValuePair.Value.Split(',').Select(double.Parse)];
                 coordinates[0] = Math.Round(coordinates[0] - serverAPI.World.DefaultSpawnPosition.X);

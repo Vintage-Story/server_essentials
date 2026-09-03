@@ -37,7 +37,7 @@ public static class Utils
 
         if (!CheckPlayerInventoryForCommandCost(player, itemId, quantity))
         {
-            player.SendMessage(0, new StringBuilder().AppendFormat(Configuration.translationNotEnoughItems, GetItemName(itemId), quantity).ToString(), EnumChatType.CommandError);
+            player.SendMessage(0, new StringBuilder().AppendFormat(Configuration.Translations.translationNotEnoughItems, GetItemName(itemId), quantity).ToString(), EnumChatType.CommandError);
             return false;
         }
 

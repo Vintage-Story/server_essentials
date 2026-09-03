@@ -1,10 +1,13 @@
-﻿using Vintagestory.API.Common;
+using OpenConfiguration;
+using Vintagestory.API.Common;
 using Vintagestory.API.Server;
 
 namespace ServerEssentials;
 
 public class Initialization : ModSystem
 {
+    internal static ModLogger Logger = ModLogger.None;
+
     #region Commands
     private Commands.Home homeCommands;
     private Commands.TPA tpaCommands;
@@ -12,10 +15,16 @@ public class Initialization : ModSystem
     private Commands.CustomCommands customCommands;
     #endregion
 
+    public override void StartPre(ICoreAPI api)
+    {
+        base.StartPre(api);
+        Logger = new ModLogger(api.Logger, "ServerEssentials");
+    }
+
     public override void StartServerSide(ICoreServerAPI api)
     {
         base.StartServerSide(api);
-        Debug.Log($"Running on Version: {Mod.Info.Version}");
+        Logger.Log($"Running on Version: {Mod.Info.Version}");
 
         homeCommands = new(api);
         tpaCommands = new(api);
@@ -23,41 +32,11 @@ public class Initialization : ModSystem
         customCommands = new(api);
     }
 
-    public override void StartPre(ICoreAPI api)
-    {
-        base.StartPre(api);
-        Debug.LoadLogger(api.Logger);
-    }
-
     public override void AssetsLoaded(ICoreAPI api)
     {
         base.AssetsLoaded(api);
-        Configuration.UpdateBaseConfigurations(api);
-        Configuration.UpdateTranslationsConfigurations(api);
-        Debug.Log("Configurations Loaded");
-    }
-}
-
-public class Debug
-{
-    static private ILogger logger;
-
-    static public void LoadLogger(ILogger _logger) => logger = _logger;
-    static public void Log(string message)
-    {
-        logger?.Log(EnumLogType.Notification, $"[ServerEssentials] {message}");
-    }
-    static public void LogDebug(string message)
-    {
-        if (Configuration.enableExtendedLog)
-            logger?.Log(EnumLogType.Debug, $"[ServerEssentials] {message}");
-    }
-    static public void LogWarn(string message)
-    {
-        logger?.Log(EnumLogType.Warning, $"[ServerEssentials] {message}");
-    }
-    static public void LogError(string message)
-    {
-        logger?.Log(EnumLogType.Error, $"[ServerEssentials] {message}");
+        Configuration.Load(api);
+        Logger.ExtendedLoggingEnabled = Configuration.CustomCommands.enableExtendedLog;
+        Logger.Log("Configurations Loaded");
     }
 }

@@ -7,7 +7,7 @@ public class CustomCommands
 {
     public CustomCommands(ICoreServerAPI api)
     {
-        foreach (CustomCommandEntry entry in Configuration.customCommands)
+        foreach (CustomCommandEntry entry in Configuration.CustomCommands.customCommands)
         {
             string message = entry.Message;
 
@@ -16,7 +16,7 @@ public class CustomCommands
                 .RequiresPrivilege(entry.Privilege)
                 .HandleWith(_ => TextCommandResult.Success(message, "1"));
 
-            Debug.Log($"Command created: /{entry.Syntax}");
+            Initialization.Logger.Log($"Command created: /{entry.Syntax}");
         }
     }
 }

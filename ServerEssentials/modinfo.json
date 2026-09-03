@@ -9,6 +9,7 @@
     "version": "1.0.6",
     "side": "server",
     "dependencies": {
-        "game": ""
+        "game": "",
+        "openconfiguration": ""
     }
 }
