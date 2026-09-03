@@ -46,7 +46,7 @@ public class Home
                 // Function Handle
                 .HandleWith(SetHomeCommand);
 
-                Initialization.Logger.Log($"Command created: /{syntax}");
+                ServerEssentialsModSystem.Logger.Log($"Command created: /{syntax}");
             }
         }
         if (Configuration.Home.enableHomeCommand)
@@ -65,7 +65,7 @@ public class Home
                 .WithArgs(new StringArgParser("homename", false))
                 // Function Handle
                 .HandleWith(HomeCommand);
-                Initialization.Logger.Log($"Command created: /{syntax}");
+                ServerEssentialsModSystem.Logger.Log($"Command created: /{syntax}");
             }
         }
         if (Configuration.Home.enableDelHomeCommand)
@@ -84,7 +84,7 @@ public class Home
                 .WithArgs(new StringArgParser("homename", false))
                 // Function Handle
                 .HandleWith(DelHomeCommand);
-                Initialization.Logger.Log($"Command created: /{syntax}");
+                ServerEssentialsModSystem.Logger.Log($"Command created: /{syntax}");
             }
         }
         if (Configuration.Home.enableListHomeCommand)
@@ -101,7 +101,7 @@ public class Home
                 .RequiresPlayer()
                 // Function Handle
                 .HandleWith(ListHomeCommand);
-                Initialization.Logger.Log($"Command created: /{syntax}");
+                ServerEssentialsModSystem.Logger.Log($"Command created: /{syntax}");
             }
         }
         if (Configuration.Home.enableBuyHomeCommand)
@@ -118,7 +118,7 @@ public class Home
                 .RequiresPlayer()
                 // Function Handle
                 .HandleWith(BuyHomeCommand);
-                Initialization.Logger.Log($"Command created: /{syntax}");
+                ServerEssentialsModSystem.Logger.Log($"Command created: /{syntax}");
             }
         }
     }
@@ -201,8 +201,8 @@ public class Home
                 EntityPos playerActualPosition = player.Entity.Pos.Copy();
                 float playerActualHealth = player.Entity.GetBehavior<EntityBehaviorHealth>()?.Health ?? 0;
 
-                Initialization.Logger.LogDebug($"{player.PlayerName}: POS: {playerLastPosition.XYZ},{playerActualPosition.XYZ}");
-                Initialization.Logger.LogDebug($"{player.PlayerName}: Health: {playerLastHealth},{playerActualHealth}");
+                ServerEssentialsModSystem.Logger.LogDebug($"{player.PlayerName}: POS: {playerLastPosition.XYZ},{playerActualPosition.XYZ}");
+                ServerEssentialsModSystem.Logger.LogDebug($"{player.PlayerName}: Health: {playerLastHealth},{playerActualHealth}");
 
                 if (!Configuration.Home.homeCommandCanMove)
                 {

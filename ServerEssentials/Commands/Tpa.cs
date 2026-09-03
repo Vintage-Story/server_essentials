@@ -47,7 +47,7 @@ public class TPA
                 .WithArgs(new StringArgParser("playername", false))
                 // Function Handle
                 .HandleWith(TpaCommand);
-                Initialization.Logger.Log($"Command created: /{syntax}");
+                ServerEssentialsModSystem.Logger.Log($"Command created: /{syntax}");
             }
         }
         if (Configuration.TPA.enableTpaAcceptCommand)
@@ -66,7 +66,7 @@ public class TPA
                 .WithArgs(new StringArgParser("playername", false))
                 // Function Handle
                 .HandleWith(TpaAcceptCommand);
-                Initialization.Logger.Log($"Command created: /{syntax}");
+                ServerEssentialsModSystem.Logger.Log($"Command created: /{syntax}");
             }
         }
         if (Configuration.TPA.enableTpaDenyCommand)
@@ -85,7 +85,7 @@ public class TPA
                 .WithArgs(new StringArgParser("playername", false))
                 // Function Handle
                 .HandleWith(TpaDenyCommand);
-                Initialization.Logger.Log($"Command created: /{syntax}");
+                ServerEssentialsModSystem.Logger.Log($"Command created: /{syntax}");
             }
         }
         if (Configuration.TPA.enableTpaCancelCommand)
@@ -104,7 +104,7 @@ public class TPA
                 .WithArgs(new StringArgParser("playername", false))
                 // Function Handle
                 .HandleWith(TpaCancelCommand);
-                Initialization.Logger.Log($"Command created: /{syntax}");
+                ServerEssentialsModSystem.Logger.Log($"Command created: /{syntax}");
             }
         }
     }
@@ -283,7 +283,7 @@ public class TPA
                     teleporting.SendMessage(0, new StringBuilder().AppendFormat(Configuration.Translations.translationTpaRequestCancelled, receiver.PlayerName).ToString(), EnumChatType.CommandError);
                     serverAPI.Event.UnregisterGameTickListener(tickId);
 
-                    Initialization.Logger.LogDebug($"{teleporting.PlayerName} canceled due to not on tpaDelays");
+                    ServerEssentialsModSystem.Logger.LogDebug($"{teleporting.PlayerName} canceled due to not on tpaDelays");
                     return;
                 }
             }
@@ -294,15 +294,15 @@ public class TPA
                 teleporting.SendMessage(0, new StringBuilder().AppendFormat(Configuration.Translations.translationTpaRequestCancelled, receiver.PlayerName).ToString(), EnumChatType.CommandError);
                 serverAPI.Event.UnregisterGameTickListener(tickId);
 
-                Initialization.Logger.LogDebug($"{teleporting.PlayerName} canceled due to {receiver.PlayerName} missing tpaDelays");
+                ServerEssentialsModSystem.Logger.LogDebug($"{teleporting.PlayerName} canceled due to {receiver.PlayerName} missing tpaDelays");
                 return;
             }
 
             EntityPos playerActualPosition = teleporting.Entity.Pos.Copy();
             float playerActualHealth = teleporting.Entity.GetBehavior<EntityBehaviorHealth>()?.Health ?? 0;
 
-            Initialization.Logger.LogDebug($"{teleporting.PlayerName}: POS: {playerLastPosition.XYZ},{playerActualPosition.XYZ}");
-            Initialization.Logger.LogDebug($"{teleporting.PlayerName}: Health: {playerLastHealth},{playerActualHealth}");
+            ServerEssentialsModSystem.Logger.LogDebug($"{teleporting.PlayerName}: POS: {playerLastPosition.XYZ},{playerActualPosition.XYZ}");
+            ServerEssentialsModSystem.Logger.LogDebug($"{teleporting.PlayerName}: Health: {playerLastHealth},{playerActualHealth}");
 
             if (!Configuration.TPA.tpaCommandCanMove)
             {
@@ -312,7 +312,7 @@ public class TPA
                     teleporting.SendMessage(0, Configuration.Translations.translationTpaCancelledDueMoving, EnumChatType.CommandError);
                     serverAPI.Event.UnregisterGameTickListener(tickId);
 
-                    Initialization.Logger.LogDebug($"{teleporting.PlayerName} moved during tpa: {playerActualPosition.XYZ} : {playerLastPosition.XYZ}");
+                    ServerEssentialsModSystem.Logger.LogDebug($"{teleporting.PlayerName} moved during tpa: {playerActualPosition.XYZ} : {playerLastPosition.XYZ}");
                     return;
                 }
             }
@@ -326,7 +326,7 @@ public class TPA
                     teleporting.SendMessage(0, Configuration.Translations.translationTpaCancelledDueDamage, EnumChatType.CommandError);
                     serverAPI.Event.UnregisterGameTickListener(tickId);
 
-                    Initialization.Logger.LogDebug($"{teleporting.PlayerName} received damage during tpa: {playerActualHealth} : {playerLastHealth}");
+                    ServerEssentialsModSystem.Logger.LogDebug($"{teleporting.PlayerName} received damage during tpa: {playerActualHealth} : {playerLastHealth}");
                     return;
                 }
 

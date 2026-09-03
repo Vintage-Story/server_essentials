@@ -175,10 +175,10 @@ public static class Configuration
 
     internal static void Load(ICoreAPI api)
     {
-        Home = ConfigManager.LoadModConfig<HomeConfiguration>(api, "ServerEssentials", "base", Initialization.Logger, "serveressentials:config/base.json");
-        TPA = ConfigManager.LoadModConfig<TPAConfiguration>(api, "ServerEssentials", "base", Initialization.Logger, "serveressentials:config/base.json");
-        Back = ConfigManager.LoadModConfig<BackConfiguration>(api, "ServerEssentials", "base", Initialization.Logger, "serveressentials:config/base.json");
-        CustomCommands = ConfigManager.LoadModConfig<CustomCommandsConfiguration>(api, "ServerEssentials", "base", Initialization.Logger, "serveressentials:config/base.json");
-        Translations = ConfigManager.LoadModConfig<TranslationsConfiguration>(api, "ServerEssentials", "translations", Initialization.Logger, "serveressentials:config/translations.json");
+        Home = ConfigManager.LoadModConfig<HomeConfiguration>(api, "ServerEssentials", "base", ServerEssentialsModSystem.Logger, "serveressentials:config/base.json");
+        TPA = ConfigManager.LoadModConfig<TPAConfiguration>(api, "ServerEssentials", "base", ServerEssentialsModSystem.Logger, "serveressentials:config/base.json");
+        Back = ConfigManager.LoadModConfig<BackConfiguration>(api, "ServerEssentials", "base", ServerEssentialsModSystem.Logger, "serveressentials:config/base.json");
+        CustomCommands = ConfigManager.LoadModConfig<CustomCommandsConfiguration>(api, "ServerEssentials", "base", ServerEssentialsModSystem.Logger, "serveressentials:config/base.json");
+        Translations = ConfigManager.LoadModConfig<TranslationsConfiguration>(api, "ServerEssentials", "translations", ServerEssentialsModSystem.Logger, "serveressentials:config/translations.json");
     }
 }

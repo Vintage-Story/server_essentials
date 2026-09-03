@@ -41,7 +41,7 @@ public class Back
                 if (lastData.Value != actualData.Value || lastData.Key != actualData.Key)
                 {
 
-                    Initialization.Logger.LogDebug($"{player.PlayerName} has a new data removing the previously tick listener");
+                    ServerEssentialsModSystem.Logger.LogDebug($"{player.PlayerName} has a new data removing the previously tick listener");
                     serverAPI.Event.UnregisterGameTickListener(tickId);
                     return;
                 }
@@ -49,7 +49,7 @@ public class Back
                 KeyValuePair<EntityPos, int> updatedData = new(actualData.Key, actualData.Value - 1);
                 if (updatedData.Value <= 0)
                 {
-                    Initialization.Logger.LogDebug($"{player.PlayerName} back command has timeout removing it...");
+                    ServerEssentialsModSystem.Logger.LogDebug($"{player.PlayerName} back command has timeout removing it...");
                     serverAPI.Event.UnregisterGameTickListener(tickId);
                     backData.Remove(player.PlayerUID);
                     return;
@@ -81,13 +81,13 @@ public class Back
                 .RequiresPlayer()
                 // Function Handle
                 .HandleWith(BackCommand);
-                Initialization.Logger.Log($"Command created: /{syntax}");
+                ServerEssentialsModSystem.Logger.Log($"Command created: /{syntax}");
             }
         }
         if (Configuration.Back.enableBackForDeath)
         {
             api.Event.PlayerDeath += BackPlayerDeath;
-            Initialization.Logger.Log("Death event created for /back");
+            ServerEssentialsModSystem.Logger.Log("Death event created for /back");
         }
     }
 
@@ -133,8 +133,8 @@ public class Back
                 EntityPos playerActualPosition = player.Entity.Pos.Copy();
                 float playerActualHealth = player.Entity.GetBehavior<EntityBehaviorHealth>()?.Health ?? 0;
 
-                Initialization.Logger.LogDebug($"{player.PlayerName}: POS: {playerLastPosition.XYZ},{playerActualPosition.XYZ}");
-                Initialization.Logger.LogDebug($"{player.PlayerName}: Health: {playerLastHealth},{playerActualHealth}");
+                ServerEssentialsModSystem.Logger.LogDebug($"{player.PlayerName}: POS: {playerLastPosition.XYZ},{playerActualPosition.XYZ}");
+                ServerEssentialsModSystem.Logger.LogDebug($"{player.PlayerName}: Health: {playerLastHealth},{playerActualHealth}");
 
                 if (!Configuration.Back.backCommandCanMove)
                 {

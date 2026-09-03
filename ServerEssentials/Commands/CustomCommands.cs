@@ -16,7 +16,7 @@ public class CustomCommands
                 .RequiresPrivilege(entry.Privilege)
                 .HandleWith(_ => TextCommandResult.Success(message, "1"));
 
-            Initialization.Logger.Log($"Command created: /{entry.Syntax}");
+            ServerEssentialsModSystem.Logger.Log($"Command created: /{entry.Syntax}");
         }
     }
 }

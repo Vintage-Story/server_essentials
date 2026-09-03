@@ -4,7 +4,7 @@ using Vintagestory.API.Server;
 
 namespace ServerEssentials;
 
-public class Initialization : ModSystem
+public class ServerEssentialsModSystem : ModSystem
 {
     internal static ModLogger Logger = ModLogger.None;
 

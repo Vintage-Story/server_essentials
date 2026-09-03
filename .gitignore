@@ -1,7 +1,4 @@
 .vscode
-CakeBuild
 Releases
-ServerEssentials/bin
-ServerEssentials/obj
-ServerEssentials.sln
-build.ps1
+bin*
+obj*
