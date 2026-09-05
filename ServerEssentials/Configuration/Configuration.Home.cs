@@ -40,5 +40,5 @@ public static partial class Configuration
     public static HomeConfiguration Home = new();
 
     private static void LoadHome(ICoreAPI api)
-        => Home = ConfigManager.LoadModConfig<HomeConfiguration>(api, "ServerEssentials", "base", ServerEssentialsModSystem.Logger, "serveressentials:config/base.json");
+        => Home = ConfigManager.LoadModConfig<HomeConfiguration>(api, "ServerEssentials", "home", ServerEssentialsModSystem.Logger);
 }

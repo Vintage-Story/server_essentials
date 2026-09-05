@@ -27,5 +27,5 @@ public static partial class Configuration
     public static BackConfiguration Back = new();
 
     private static void LoadBack(ICoreAPI api)
-        => Back = ConfigManager.LoadModConfig<BackConfiguration>(api, "ServerEssentials", "base", ServerEssentialsModSystem.Logger, "serveressentials:config/base.json");
+        => Back = ConfigManager.LoadModConfig<BackConfiguration>(api, "ServerEssentials", "back", ServerEssentialsModSystem.Logger);
 }

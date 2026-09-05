@@ -77,5 +77,5 @@ public static partial class Configuration
     public static TranslationsConfiguration Translations = new();
 
     private static void LoadTranslations(ICoreAPI api)
-        => Translations = ConfigManager.LoadModConfig<TranslationsConfiguration>(api, "ServerEssentials", "translations", ServerEssentialsModSystem.Logger, "serveressentials:config/translations.json");
+        => Translations = ConfigManager.LoadModConfig<TranslationsConfiguration>(api, "ServerEssentials", "translations", ServerEssentialsModSystem.Logger);
 }

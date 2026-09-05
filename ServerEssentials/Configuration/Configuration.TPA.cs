@@ -34,5 +34,5 @@ public static partial class Configuration
     public static TPAConfiguration TPA = new();
 
     private static void LoadTPA(ICoreAPI api)
-        => TPA = ConfigManager.LoadModConfig<TPAConfiguration>(api, "ServerEssentials", "base", ServerEssentialsModSystem.Logger, "serveressentials:config/base.json");
+        => TPA = ConfigManager.LoadModConfig<TPAConfiguration>(api, "ServerEssentials", "tpa", ServerEssentialsModSystem.Logger);
 }

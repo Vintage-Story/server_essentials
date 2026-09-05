@@ -26,5 +26,5 @@ public static partial class Configuration
     public static CustomCommandsConfiguration CustomCommands = new();
 
     private static void LoadCustomCommands(ICoreAPI api)
-        => CustomCommands = ConfigManager.LoadModConfig<CustomCommandsConfiguration>(api, "ServerEssentials", "base", ServerEssentialsModSystem.Logger, "serveressentials:config/base.json");
+        => CustomCommands = ConfigManager.LoadModConfig<CustomCommandsConfiguration>(api, "ServerEssentials", "customcommands", ServerEssentialsModSystem.Logger);
 }
